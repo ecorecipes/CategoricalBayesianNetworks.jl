@@ -1,0 +1,281 @@
+---
+title: "Open networks and composition"
+author: "Simon Frost"
+format:
+  html:
+    code-fold: false
+    toc: true
+  gfm:
+    toc: true
+  pdf: default
+engine: julia
+---
+
+## Overview
+
+An open Bayesian network is a network with an interface: some variables are inputs,
+provided by the environment, and some are outputs, offered to it. A network whose input
+variables carry no mechanism of their own is exactly a causal theory with free inputs
+[@Fong2012], and the interface is made precise as a structured cospan
+[@BaezCourser2020], the same construction AlgebraicJulia uses for open dynamical and
+epidemiological systems [@Libkind2022]. Open networks compose by gluing outputs to
+inputs, and the semantics of the composite is the composite of the semantics: the kernel
+of `A` composed with `B` is the kernel of `A` composed with the kernel of `B`, and
+likewise for the tensor (Propositions 2 and 3 of the package specification). This
+vignette splits the reference habitat network into an abiotic and a biotic component,
+composes them back in several ways, refines a mechanism by substitution, and checks the
+propositions numerically.
+
+## Setup
+
+```{julia}
+using CategoricalBayesianNetworks
+
+m = reference_habitat_model()
+ref = reference_habitat_bn()
+variable_names(ref)
+```
+
+## Splitting the reference network
+
+The abiotic component generates `SoilMoisture` from `Climate` and `Irrigation`; the
+biotic component reads `SoilMoisture` and generates `GrazingPressure`, `Vegetation`,
+`HabitatQuality` and `Occupancy`. In the biotic network `SoilMoisture` has no mechanism
+(`closed = false` leaves it exogenous).
+
+```{julia}
+abiotic = bayesnet(:Climate => [:dry, :normal, :wet], :Irrigation => [:low, :high],
+                   :SoilMoisture => [:low, :medium, :high];
+                   mechanisms = [:SoilMoisture => (:Climate, :Irrigation)])
+biotic = bayesnet(:SoilMoisture => [:low, :medium, :high], :GrazingPressure => [:low, :high],
+                  :Vegetation => [:sparse, :moderate, :dense], :HabitatQuality => [:poor, :good],
+                  :Occupancy => [:absent, :present];
+                  mechanisms = [:GrazingPressure => (),
+                                :Vegetation => (:SoilMoisture, :GrazingPressure),
+                                :HabitatQuality => :Vegetation,
+                                :Occupancy => :HabitatQuality],
+                  closed = false)
+variable_name.(Ref(biotic), exogenous(biotic))
+```
+
+`Open` makes a network open by naming its inputs and outputs. The result is a Catlab
+structured cospan [@BaezCourser2020]: the apex is the network, the feet are
+`VariableSpace`s (the interface variables with their states) and the legs embed the feet
+into the apex.
+
+```{julia}
+A = Open(abiotic; outputs = [:SoilMoisture])
+B = Open(biotic; inputs = [:SoilMoisture], outputs = [:Occupancy])
+println(A)
+println(B)
+```
+
+```{julia}
+to_graphviz(B)
+```
+
+Inputs are drawn dashed and outputs bold. `input_space(B)` is the foot itself:
+
+```{julia}
+variable_names(input_space(B)), states(input_space(B), :SoilMoisture)
+```
+
+## The typed-interface rule
+
+Not every choice of interface is allowed. An open network must satisfy the
+typed-interface rule: input variables have no mechanism, the input leg is injective,
+every mechanism-free variable is an input, the apex is acyclic, and the legs preserve
+names, states and positions. Under this rule the pushouts behind composition never give
+a variable two mechanisms. `Open` checks the rule and rejects violations:
+
+```{julia}
+try
+    Open(abiotic; inputs = [:SoilMoisture])       # SoilMoisture has a mechanism
+catch e
+    sprint(showerror, e)
+end
+```
+
+```{julia}
+try
+    Open(biotic; outputs = [:Occupancy])          # SoilMoisture is exogenous but not an input
+catch e
+    sprint(showerror, e)
+end
+```
+
+## Sequential composition and gluing
+
+`compose` (or `⋅`) is strict: the outputs of the first network must equal the inputs of
+the second, position by position, with the same states. The composite is the pushout of
+the two apexes along the shared interface.
+
+```{julia}
+C = compose(A, B)
+inputs(C), outputs(C), sort(variable_names(apex(C)))
+```
+
+The composite has no free inputs and one output, and its apex is the reference network
+again -- gluing the two halves along `SoilMoisture` recovers exactly what was split:
+
+```{julia}
+canonicalize(apex(C)) == canonicalize(ref)
+```
+
+(`ref` is the structure alone, `reference_habitat_bn()`; the apex of `C` carries the
+`NoRef` references of its components, whereas `syntax(m)` carries the `NamedRef`s that
+`bind_cpt` assigned, so the comparison is made on the structure.)
+
+A mismatch is reported with the position and the two sides:
+
+```{julia}
+B2 = Open(rename_variable(biotic, :SoilMoisture => :Moisture);
+          inputs = [:Moisture], outputs = [:Occupancy])
+try
+    compose(A, B2)
+catch e
+    sprint(showerror, e)
+end
+```
+
+`glue` composes along explicit pairs of names, which may differ (the glued variable
+keeps the name from the first network), and leaves the other interface variables
+in place:
+
+```{julia}
+G = glue(A, B2; along = [:SoilMoisture => :Moisture])
+canonicalize(apex(G)) == canonicalize(ref)
+```
+
+## Tensor and undirected wiring diagrams
+
+`otimes` (or `⊗`) places networks side by side; the apex is the disjoint union and the
+interfaces are concatenated. Names may repeat, which is fine for the structure but
+prevents evaluation until variables are renamed.
+
+```{julia}
+T = otimes(A, A)
+inputs(T), outputs(T), nparts(apex(T), :Variable)
+```
+
+`oapply` composes along an undirected wiring diagram written with `@relation`: each box
+receives a network, its ports are the interface variables (inputs first), and shared
+junctions are glued. The typed-interface rule cannot be expressed in an undirected
+diagram, so it is checked afterwards.
+
+```{julia}
+uwd = @relation (occ,) begin
+    abiotic(soil)
+    biotic(soil, occ)
+end
+R = oapply(uwd, Dict(:abiotic => A, :biotic => B))
+outputs(R), canonicalize(apex(R)) == canonicalize(ref)
+```
+
+## Substitution
+
+`substitute` replaces a mechanism by an open network with the same interface: the
+parents as inputs, in order, and the target as output. Here the `Vegetation` mechanism
+is refined into a two-step pathway through a hidden `Stress` variable.
+
+```{julia}
+two_step = bayesnet(:SoilMoisture => [:low, :medium, :high], :GrazingPressure => [:low, :high],
+                    :Stress => [:lo, :hi], :Vegetation => [:sparse, :moderate, :dense];
+                    mechanisms = [:Stress => (:SoilMoisture, :GrazingPressure),
+                                  :Vegetation => :Stress], closed = false)
+N = Open(two_step; inputs = [:SoilMoisture, :GrazingPressure], outputs = [:Vegetation])
+S = substitute(ref, :Vegetation_mechanism => N)
+sort(variable_names(S)), mechanism_names(S)
+```
+
+```{julia}
+to_graphviz(S)
+```
+
+The same substitution can be done on the wiring diagram with Catlab's `substitute`, and
+reading the result back gives the same network:
+
+```{julia}
+d = to_wiring_diagram(ref)
+b = findfirst(i -> box(d, i).value.name == :Vegetation_mechanism, box_ids(d))
+dS = substitute(d, b, to_wiring_diagram(N))
+canonicalize(first(from_wiring_diagram(dS))) == canonicalize(S)
+```
+
+On a `BayesModel` the substitution is recorded in the history, and kernels for the new
+mechanisms are bound afterwards.
+
+## Semantics of open networks: compositionality
+
+`interpret` gives the kernel `⊗ inputs → ⊗ outputs` of an open network: the product of
+its mechanisms' kernels, summed over the hidden variables. Kernels are looked up by
+`KernelRef`, which survives composition because it is an attribute of the apex; the
+components above were built without references, so we look kernels up by target name
+instead.
+
+```{julia}
+by_name = Dict(x => kernel(m, x) for x in variable_names(ref))
+kA = interpret(A, by_name)
+kB = interpret(B, by_name)
+kA.codom, kB.dom, kB.codom
+```
+
+Sequential compositionality (Proposition 3 of the specification): the kernel of the
+composite is the composite of the kernels, so `interpret` is functorial.
+
+```{julia}
+interpret(compose(A, B), by_name) ≈ compose(kA, kB)
+```
+
+Tensor compositionality (Proposition 2): the kernel of the tensor is the tensor of the
+kernels, so `interpret` is monoidal as well.
+
+```{julia}
+interpret(otimes(A, B), by_name) ≈ otimes(kA, kB)
+```
+
+And the composite agrees with the closed model's own marginal, which is the reference
+evaluation of the previous vignette:
+
+```{julia}
+interpret(C, by_name) ≈ marginal(m, :Occupancy)
+```
+
+## Unrolling a dynamic network is gluing
+
+The same machinery explains what `unroll` does to a `DynamicBayesNet`. A dynamic
+template is an initial network and a transition network related by the lag naming
+convention; `initial_slice` is the initial network renamed to slice 0 and
+`transition_slice(dbn, t)` the transition template seen from slice `t`, with the lagged
+variables exogenous. Gluing the outputs of one slice to the inputs of the next is
+exactly what `unroll` produces, up to renumbering of parts.
+
+```{julia}
+dbn = vegetation_herbivore_dbn()
+A_0 = Open(initial_slice(dbn); outputs = [:Vegetation_0, :Herbivores_0])
+B_1 = Open(transition_slice(dbn, 1); inputs = [:Vegetation_0, :Herbivores_0],
+           outputs = [:Vegetation_1, :Herbivores_1])
+G = glue(A_0, B_1;
+         along = [:Vegetation_0 => :Vegetation_0, :Herbivores_0 => :Herbivores_0])
+canonicalize(apex(G)) == canonicalize(unroll(dbn, 1))
+```
+
+`unroll` builds the network directly rather than by repeated pushouts, because that is
+faster and keeps the names predictable, but both test suites keep the two constructions
+in agreement. Dynamic networks are the subject of a vignette of `BayesianNetworks.jl`.
+
+## Summary
+
+`Open` presents a network as a structured cospan, so composition is a pushout of ACSets
+rather than renaming by hand, and the typed-interface rule is the condition under which
+that pushout can never give one variable two mechanisms. `compose`, `glue`, `otimes`,
+`oapply` and `substitute` are all built from that one idea, and `interpret` sends each of
+them to the corresponding operation on finite stochastic kernels, which is what makes
+building a large model out of reviewed pieces safe; unrolling a dynamic network is one
+more instance of the same gluing. Serialisation and provenance,
+dynamic networks and model cards continue in `BayesianNetworks.jl`'s own vignettes.
+
+## References
+
+::: {#refs}
+:::

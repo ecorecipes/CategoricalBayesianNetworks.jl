@@ -1,0 +1,36 @@
+name = "CategoricalBayesianNetworks"
+uuid = "83c8271f-e735-439d-be5f-7ff3e7e4c690"
+version = "0.1.0"
+authors = ["Simon Frost"]
+
+[deps]
+ACSets = "227ef7b5-1206-438b-ac65-934d6da304b8"
+Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
+FiniteKernels = "2ee73795-50db-4096-9573-22982ed4949b"
+MarkovCategories = "89535b7d-47b5-4a7c-ab85-485cba9d75b9"
+BayesianNetworkFormats = "590d4596-919e-4d5f-b4a5-097a6400eab8"
+BayesianNetworks = "47d2e50c-3d9a-425e-96fd-023c794d3c65"
+
+[sources]
+FiniteKernels = {path = "../FiniteKernels.jl"}
+MarkovCategories = {path = "../MarkovCategories.jl"}
+BayesianNetworkFormats = {path = "../BayesianNetworkFormats.jl"}
+BayesianNetworks = {path = "../BayesianNetworks.jl"}
+
+[compat]
+ACSets = "0.2.29"
+Catlab = "0.17.6"
+FiniteKernels = "0.1"
+MarkovCategories = "0.1"
+BayesianNetworkFormats = "0.1"
+BayesianNetworks = "0.1"
+Random = "1"
+Test = "1"
+julia = "1.12"
+
+[extras]
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test", "Random"]
