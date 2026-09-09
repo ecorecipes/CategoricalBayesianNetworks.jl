@@ -1,0 +1,106 @@
+{
+  "binary_sha256": "c38f10ef5115317a4b74b407a0ef38e7e203bce3aa7e51b82f3869884f3c3f18",
+  "generator_path": "../export-certificate-cases.jl",
+  "generator_sha256": "dab94eff2a4e6e90c6875c78ec4a4162e6740ceedd1cbce8d92eb8b3d7d2e8a4",
+  "accepted": 6,
+  "rejected": 6,
+  "results": [
+    {
+      "file": "automatic-ranks.json",
+      "sha256": "ca86572c4ced79bf1c1e5b49e0f6786ecca3650d0cc70c66b61eb70c714d30f9",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 3 variables, 2 mechanisms, 1 inputs, 3 outputs\n",
+      "stderr": ""
+    },
+    {
+      "file": "colliding-scalars.json",
+      "sha256": "2781a939d33824f9419e2bfe982118d442c5f596864aa3e8a8fa816f47346dc3",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 2 variables, 2 mechanisms, 0 inputs, 0 outputs\n",
+      "stderr": ""
+    },
+    {
+      "file": "empty.json",
+      "sha256": "8bdae9c7349e7ca3d27c67c133adc249fe72035e75e7d80f910ea09fb236606b",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 0 variables, 0 mechanisms, 0 inputs, 0 outputs\n",
+      "stderr": ""
+    },
+    {
+      "file": "hidden-scalar.json",
+      "sha256": "66aaf1f60627d1b866a7bbaa5e3117125328b59ee2d718b998605f3d11f1d797",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 1 variables, 1 mechanisms, 0 inputs, 0 outputs\n",
+      "stderr": ""
+    },
+    {
+      "file": "invalid-duplicate-position.json",
+      "sha256": "19d4c032a62e0fe3267aa7f581d174eaecfea696d2b5b53e871e5a89237dcdbd",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: certificate failed Network.check (positions, states, references, interfaces, generators or ranks)\n"
+    },
+    {
+      "file": "invalid-foot-reference.json",
+      "sha256": "dc0d70e79a82a5b4855843062a56ab480cb25ed3aacb4ef9bb726b00f83c785d",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: certificate failed Network.check (positions, states, references, interfaces, generators or ranks)\n"
+    },
+    {
+      "file": "invalid-fractional-index.json",
+      "sha256": "a458bbba0bdab4b6aacb059a6f7f9bf65dcdb3d833f1fc77709c81e7a3ac6aea",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: offset 593: certificate numbers must be integer tokens (no decimal or exponent notation)\n"
+    },
+    {
+      "file": "invalid-negative-rank.json",
+      "sha256": "c3c2e336012e36c5ad7f46c67bb0ec2fde0f60a56193c9147ba3e972fb27d7d7",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: variableData: rank: Natural number expected\n"
+    },
+    {
+      "file": "invalid-variable-index.json",
+      "sha256": "50ed32f18860adfba2ecbe509f613f1ac983d993898ea963ad930431c2eee1cd",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: mechanisms: target: variable index 3 is not below bound 3\n"
+    },
+    {
+      "file": "invalid-version.json",
+      "sha256": "11902a16d8f97bde0c8dec2460869d665777a160ee457fb194aa2e34718f773b",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "stdout": "",
+      "stderr": "invalid certificate: unsupported certificate format\n"
+    },
+    {
+      "file": "mixed.json",
+      "sha256": "342074ca226737c75d4ef32ed831accf1eabc764192b0915276c6ed17e9de4ca",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 3 variables, 2 mechanisms, 1 inputs, 3 outputs\n",
+      "stderr": ""
+    },
+    {
+      "file": "renumbered.json",
+      "sha256": "28787904f677c1157c346d4e13c41187d568384ffb2693de2445f1667aee62d1",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "stdout": "valid OpenNet.RawCertificate/v1: 3 variables, 2 mechanisms, 1 inputs, 3 outputs\n",
+      "stderr": ""
+    }
+  ],
+  "scope": "Executed Lean CLI on concrete Julia-exported files. No Julia compiler/runtime refinement theorem is asserted."
+}

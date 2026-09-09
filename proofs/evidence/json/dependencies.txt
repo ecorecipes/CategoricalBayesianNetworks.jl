@@ -1,0 +1,2 @@
+python3 scripts/dependency_inventory.py
+Recorded 29 same-prover Lean source files and pinned external dependencies.

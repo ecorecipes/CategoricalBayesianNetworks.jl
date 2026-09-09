@@ -1,0 +1,5 @@
+PASS: implementation-v1 SOURCE.json digest matches.
+PASS: all 26 mathematical source-closure hashes are unchanged.
+PASS: JSON fixture parses and satisfies finite position, reference, rank and attributed-interface checks.
+PASS: fixture retains two repeated parent occurrences, pass-through, copied outputs and the hidden generator.
+This is data-format validation, not a Julia exporter or JSON-parser refinement proof.

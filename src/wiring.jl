@@ -10,7 +10,7 @@ which is how Catlab draws `ThMarkovCategory` (see MarkovCategories.jl's
 diagram in a Markov category, with copy and discard carrying the structure that a
 directed graph leaves implicit, is [Fritz2020](@cite)'s synthetic presentation.
 
-The diagram is typed: ports carry [`VariablePort`](@ref)s (name and states), boxes
+The diagram is typed: ports carry [`VariablePort`](@ref)s (name, states and space reference), boxes
 carry [`MechanismBox`](@ref)es (name and `KernelRef`). `from_wiring_diagram`
 inverts the view on the round-trip subset (flat diagrams of single-output boxes with
 typed ports), and `to_hom_expr(FreeMarkovCategory, wd)` turns the diagram into a free
@@ -21,23 +21,30 @@ Markov-category expression that MarkovCategories' `evaluate` interprets in FinSt
 #####################
 
 """
-    VariablePort(name::Symbol, states::Vector{Symbol})
+    VariablePort(name::Symbol, states::Vector{Symbol}, space_ref::KernelRef=NoRef())
 
-The value carried by a port of a network's wiring diagram: the variable's name and its
-states in `state_position` order. Two ports with the same name and states are equal.
+The value carried by a port of a network's wiring diagram: its name, states in
+`state_position` order and `space_ref`. Equality includes all three attributes.
 """
 struct VariablePort
     name::Symbol
     states::Vector{Symbol}
+    space_ref::KernelRef
 end
+
+VariablePort(name::Symbol, states::Vector{Symbol}) = VariablePort(name, states, NoRef())
 
 function VariablePort(bn::AbstractVariableSpace, v)
     return VariablePort(variable_name(bn, _variable_id(bn, v)),
-                        states(bn, v))
+                        states(bn, v), subpart(bn, _variable_id(bn, v), :space_ref))
 end
 
-Base.:(==)(a::VariablePort, b::VariablePort) = a.name == b.name && a.states == b.states
-Base.hash(p::VariablePort, h::UInt) = hash(p.states, hash(p.name, hash(:VariablePort, h)))
+function Base.:(==)(a::VariablePort, b::VariablePort)
+    return a.name == b.name && a.states == b.states && a.space_ref == b.space_ref
+end
+function Base.hash(p::VariablePort, h::UInt)
+    return hash(p.space_ref, hash(p.states, hash(p.name, hash(:VariablePort, h))))
+end
 
 """
     MechanismBox(name::Symbol, kernel_ref::KernelRef)
@@ -171,7 +178,7 @@ function _port_variable(bn::BayesNet, p, where_::Int, port::Int)
     p isa VariablePort ||
         throw(WiringDiagramError(:port_value, where_, port,
                                  "port carries $(repr(p)); a VariablePort is required"))
-    return add_variable!(bn, p.name; states=p.states)
+    return add_variable!(bn, p.name; states=p.states, space_ref=p.space_ref)
 end
 
 """
@@ -183,7 +190,7 @@ exactly one output port, whose ports carry [`VariablePort`](@ref)s, and in which
 box input port and every outer output port receives exactly one wire. Every outer input
 port and every box output port defines a variable (with the port's states), every box a
 mechanism whose inputs are the variables wired into its input ports, in port order; a
-wire must connect ports with the same name and states. The result is validated with
+wire must connect ports with the same name, states and space reference. The result is validated with
 unique names, and returned together with the names of the interface variables, so that
 `canonicalize(first(from_wiring_diagram(to_wiring_diagram(bn)))) == canonicalize(bn)`
 (SPEC §12). Violations are `WiringDiagramError`s.
@@ -237,9 +244,9 @@ function _wired_source(d::WiringDiagram, bn::BayesNet, source::Dict{Port,Int}, t
         throw(WiringDiagramError(:wires, target.box, target.port,
                                  "port receives $(length(ws)) wires; exactly one is required"))
     v = source[only(ws).source]
-    (p isa VariablePort && p.name == variable_name(bn, v) && p.states == states(bn, v)) ||
+    (p isa VariablePort && p == VariablePort(bn, v)) ||
         throw(WiringDiagramError(:port_mismatch, target.box, target.port,
-                                 "port carries $(repr(p)) but is wired to variable $(variable_name(bn, v)) with states $(states(bn, v))"))
+                                 "port name, states or space reference disagree with variable $(variable_name(bn, v))"))
     return v
 end
 
@@ -330,6 +337,7 @@ outer output ports. Works for every diagram of the round-trip subset, including 
 whose outputs are all discarded. Evaluate with `evaluate(expr, free_generators(m))`.
 """
 function wiring_expression(d::BayesWiringDiagram; syntax::Module=FreeMarkovCategory)
+    from_wiring_diagram(d)
     obj = Dict{Symbol,Any}()
     for p in input_ports(d)
         obj[p.name] = Ob(syntax, p.name)
@@ -367,13 +375,14 @@ function wiring_expression(d::BayesWiringDiagram; syntax::Module=FreeMarkovCateg
             push!(wires_, t)
             continue
         end
-        # 1. copy the parents' wires
+        # Keep one wire and supply one additional copy for each ordered input occurrence.
         layer = Any[]
         newwires = Symbol[]
         for w in wires_
-            if w in ps
-                push!(layer, mcopy(obj[w]))
-                push!(newwires, w, w)
+            n = count(==(w), ps)
+            if n > 0
+                push!(layer, _mcopy_chain(obj[w], n + 1))
+                append!(newwires, fill(w, n + 1))
             else
                 push!(layer, id(obj[w]))
                 push!(newwires, w)

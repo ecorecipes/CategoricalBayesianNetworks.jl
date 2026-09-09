@@ -50,10 +50,9 @@ end
 ##########
 
 # Pushout of two embeddings of the variable space on `ids_a` of `a` (with `ids_b` the
-# matching variables of `b`, whose states must agree position by position). Returns the
-# apex and the two inclusion maps on `Variable`.
-function _pushout_along(a::BayesNet, ids_a::AbstractVector{<:Integer}, b::BayesNet,
-                        ids_b::AbstractVector{<:Integer})
+# matching variables of `b`, whose states must agree position by position).
+function _pushout_along_maps(a::BayesNet, ids_a::AbstractVector{<:Integer}, b::BayesNet,
+                             ids_b::AbstractVector{<:Integer})
     S, va, sa = _foot(a, ids_a)
     _, vb, sb = _foot(b, ids_b)
     length(sa) == length(sb) ||
@@ -64,12 +63,16 @@ function _pushout_along(a::BayesNet, ids_a::AbstractVector{<:Integer}, b::BayesN
     fb = ACSetTransformation((Variable=vb, State=sb), LS, b)
     po = pushout[infer_acset_cat(a)](fa, fb)
     ia, ib = legs(po)
-    return apex(po), _variable_component(ia), _variable_component(ib)
+    return apex(po), ia, ib
 end
 
-# Whether a network's variable and mechanism names are unique, which is what makes the
-# composite's names checkable: two uniquely named pieces must give a uniquely named
-# composite, because a pushout only merges the variables that are glued.
+function _pushout_along(a::BayesNet, ids_a::AbstractVector{<:Integer}, b::BayesNet,
+                        ids_b::AbstractVector{<:Integer})
+    P, ia, ib = _pushout_along_maps(a, ids_a, b, ids_b)
+    return P, _variable_component(ia), _variable_component(ib)
+end
+
+# Name freshness is a convenience-wrapper policy, not a composability condition.
 function _unique_named(bn::AbstractBayesNet)
     return allunique(variable_names(bn)) &&
            allunique(mechanism_names(bn))
@@ -91,10 +94,13 @@ end
 
 Strict sequential composition: the output interface of `A` must equal the input
 interface of `B` position by position ([`interface_matches`](@ref)); otherwise an
-`InterfaceMismatchError` names the first difference. The result is Catlab's
-structured-cospan composite, the pushout of `right_leg(A)` and `left_leg(B)`, with
+`InterfaceMismatchError` names the first difference. The result is a Catlab
+pushout of the two middle legs after aligning their position-equivalent feet, with
 `inputs(A)` as inputs and `outputs(B)` as outputs [BaezCourser2020](@cite); it is
 validated before being returned (with unique names when both pieces had them).
+This name-safe compatibility wrapper can reject structurally composable pieces
+whose unglued names collide. Use [`compose_structural`](@ref) for the total
+structural operation on matching valid interfaces; it deliberately retains duplicate names.
 Composing two causal theories by identifying the outputs of one with the free inputs of
 the other is the operation of [Fong2012](@cite). Under the typed-interface rule
 the pushout never produces two mechanisms for one variable; this is the machine-checked
@@ -103,13 +109,47 @@ theorem `OpenFinBayesNet.Composable.composeNet_target_injective` in
 of open networks rather than for the ACSet objects themselves.
 """
 function compose(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
+    C = compose_structural(A, B)
+    _validate_composite(C, apex(A), apex(B))
+    return C
+end
+
+"""
+    compose_structural(A::OpenBayesNet, B::OpenBayesNet) -> OpenBayesNet
+
+Sequential pushout composition without a name-freshness restriction. Both
+networks must satisfy the typed-interface rule and their interfaces must match
+positionally, including names, ordered states and references. Unglued variables
+and mechanisms remain distinct even when their names agree. The result is
+validated structurally with `unique_names=false`.
+
+Raw state-row numbering in the shared feet need not agree: the common interface
+is aligned by variable position and `state_position`. The original outer feet
+are retained, including their raw state-row numbering.
+
+This is the composition underlying the structural-isomorphism category.
+[`compose`](@ref) remains the name-safe compatibility wrapper. A result with
+duplicate names must be accessed by part ids or suitably renamed before using
+APIs requiring unique names; kernel references survive the pushout unchanged.
+"""
+function compose_structural(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
+    return first(_compose_structural_with_maps(A, B))
+end
+
+function _compose_structural_with_maps(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
+    validate(A; unique_names=false)
+    validate(B; unique_names=false)
     d = _interface_difference(output_space(A), input_space(B))
     d === nothing ||
         throw(InterfaceMismatchError(d..., "compose: outputs(A) vs inputs(B)"))
-    C = force(invoke(compose, Tuple{StructuredCospan{L},StructuredCospan{L}} where {L},
-                     A, B))
-    _validate_composite(C, apex(A), apex(B))
-    return C
+    # A single position-ordered middle foot avoids imposing raw State-ID equality.
+    P, ia, ib = _pushout_along_maps(apex(A), output_variables(A),
+                                    apex(B), input_variables(B))
+    cat = infer_acset_cat(P)
+    cospan = Cospan(P, compose[cat](left_leg(A), ia), compose[cat](right_leg(B), ib))
+    C = force(OpenBayesNetCospan(cospan, dom(A), codom(B)))
+    validate(C; unique_names=false)
+    return C, ia, ib
 end
 
 """
@@ -223,10 +263,25 @@ for outputs. Variable and mechanism names are kept, so tensoring a network with 
 yields repeated names; the result is validated with `unique_names = false`.
 """
 function otimes(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
-    C = force(invoke(otimes, Tuple{StructuredCospan{L},StructuredCospan{L}} where {L},
-                     A, B))
+    return first(_otimes_with_maps(A, B))
+end
+
+function _otimes_with_maps(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
+    validate(A; unique_names=false)
+    validate(B; unique_names=false)
+    cat = infer_acset_cat(apex(A))
+    cp = coproduct[cat](apex(A), apex(B))
+    ia, ib = legs(cp)
+    input_sum = coproduct[cat](dom(left_leg(A)), dom(left_leg(B)))
+    output_sum = coproduct[cat](dom(right_leg(A)), dom(right_leg(B)))
+    input_leg = copair[cat](input_sum,
+                            compose[cat](left_leg(A), ia), compose[cat](left_leg(B), ib))
+    output_leg = copair[cat](output_sum,
+                             compose[cat](right_leg(A), ia), compose[cat](right_leg(B), ib))
+    C = force(OpenBayesNetCospan(Cospan(apex(cp), input_leg, output_leg),
+                                 otimes(dom(A), dom(B)), otimes(codom(A), codom(B))))
     validate(C; unique_names=false)
-    return C
+    return C, ia, ib
 end
 
 # Undirected wiring diagrams

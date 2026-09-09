@@ -1,0 +1,7 @@
+Lean (version 4.30.0, arm64-apple-darwin24.6.0, commit d024af099ca4bf2c86f649261ebf59565dc8c622, Release)
+pandoc 3.8.2
+This is LuaHBTeX, Version 1.21.0 (TeX Live 2025)
+dot - graphviz version 14.0.1 (20251006.0113)
+
+Executable hash
+c38f10ef5115317a4b74b407a0ef38e7e203bce3aa7e51b82f3869884f3c3f18  .lake/build/bin/check_certificate

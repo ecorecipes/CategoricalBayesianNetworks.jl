@@ -1,0 +1,16 @@
+dot -Tsvg diagrams/mixed.dot -o diagrams/mixed.svg
+dot -Tpdf diagrams/mixed.dot -o diagrams/mixed.pdf
+dot -Tsvg diagrams/stochastic.dot -o diagrams/stochastic.svg
+dot -Tpdf diagrams/stochastic.dot -o diagrams/stochastic.pdf
+lake exe mdgen CategoricalBayesianNetworksProofs .mdgen
+rm -rf .mdgen
+pandoc CategoricalBayesianNetworksProofs.md -o CategoricalBayesianNetworksProofs.html --standalone --mathjax --css=style.css --toc --toc-depth=2 --syntax-definition=lean.xml --syntax-highlighting=tango --metadata title="Finite Typed Open Networks and Their Stochastic Interpretation" --metadata author="Simon Frost" --metadata date="2026-09-08"
+printf '\\newcommand{\\JuliaMonoDir}{%s}\n' "../../fonts/JuliaMono/" > .fonts.tex
+pandoc CategoricalBayesianNetworksProofs.md -o CategoricalBayesianNetworksProofs.tex --standalone --toc --toc-depth=2 --syntax-definition=lean.xml --syntax-highlighting=tango --metadata title="Finite Typed Open Networks and Their Stochastic Interpretation" --metadata author="Simon Frost" --metadata date="2026-09-08" \
+		--lua-filter=scripts/pdf-images.lua -V papersize=a4 -V geometry:margin=2.2cm \
+		-V colorlinks=true -V linkcolor=NavyBlue -V urlcolor=NavyBlue -V toccolor=black \
+		-H .fonts.tex -H header.tex
+lualatex -interaction=nonstopmode -halt-on-error CategoricalBayesianNetworksProofs.tex > latex-first.log
+lualatex -interaction=nonstopmode -halt-on-error CategoricalBayesianNetworksProofs.tex > latex-second.log
+lualatex -interaction=nonstopmode -halt-on-error CategoricalBayesianNetworksProofs.tex > latex-third.log
+PDF built with no missing-character warnings.

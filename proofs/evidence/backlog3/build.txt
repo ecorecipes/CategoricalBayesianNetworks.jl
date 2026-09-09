@@ -1,0 +1,4 @@
+✔ [1114/1117] Built CategoricalBayesianNetworksProofs.SemanticExamples (6.9s)
+✔ [1115/1117] Built CategoricalBayesianNetworksProofs.CertificateExamples (3.8s)
+✔ [1116/1117] Built CategoricalBayesianNetworksProofs (3.7s)
+Build completed successfully (1117 jobs).

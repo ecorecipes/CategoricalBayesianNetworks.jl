@@ -1,0 +1,34 @@
+[
+  {
+    "path": "../../fonts/JuliaMono/JuliaMono-Regular.ttf",
+    "sha256": "40a07da0d1601215eb6b89312eb44128a3e2f36675d3e1f518264bd391fc7023"
+  },
+  {
+    "path": "../../fonts/JuliaMono/JuliaMono-Bold.ttf",
+    "sha256": "a886d817cbd02fb7b646c3eb722de572bf6819ad223d66d64dbef33207964fea"
+  },
+  {
+    "path": "../../fonts/JuliaMono/JuliaMono-RegularItalic.ttf",
+    "sha256": "35260252fa576b3e2ae6cda538475e6fa78a053eade7784518b53f0a5dbaa526"
+  },
+  {
+    "path": "../../fonts/JuliaMono/JuliaMono-BoldItalic.ttf",
+    "sha256": "a3f09c2216eeca9d35f967fe9b096419a2f0a5da6d38280e934a708f84064cf3"
+  },
+  {
+    "tex_font": "STIXTwoText-Regular.otf",
+    "sha256": "df7466d8cd44a4e376d14f28af7aff5e25d77f475aa2164988360db07db96966"
+  },
+  {
+    "tex_font": "STIXTwoText-Bold.otf",
+    "sha256": "3465fca932b801fec1b241cc9561ac082d22d86e400b68fd2395636316781133"
+  },
+  {
+    "tex_font": "STIXTwoText-Italic.otf",
+    "sha256": "0f124a2036164b5901e596a7e58caa3811f759251415fcaa23acb76edd63636a"
+  },
+  {
+    "tex_font": "STIXTwoMath-Regular.otf",
+    "sha256": "95bc2729e41faf93b0bcae9e96c4dc4da45855067fd0581e621e30734fe8d90b"
+  }
+]

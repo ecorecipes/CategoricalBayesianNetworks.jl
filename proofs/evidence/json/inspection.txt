@@ -1,0 +1,11 @@
+HTML: 43 Lean code blocks; local assets exist: ['style.css', 'diagrams/mixed.svg', 'diagrams/stochastic.svg'].
+PDF: 51 pages; decoder proofs, reference roundtrip and full CLI main are present.
+Visual inspection covered the parser, schema decoder, preservation/roundtrip proofs,
+and executable pages (46, 48, 50 and 51). No clipped code or footer overlap was observed.
+Inspection caught character-literal syntax-highlighting leakage; lean.xml was corrected,
+the publication regenerated, and the corrected parser page was viewed again.
+HTML assertions confirm that parser declarations following quoted characters retain
+keyword highlighting. HTML itself was structurally checked, not browser-rendered.
+Final log: zero missing characters, zero overfull horizontal boxes, zero unresolved
+LaTeX warnings; ten small overfull vertical boxes (at most 3.07228pt) and 48 underfull
+vertical boxes remain at long-code pagination. Not every PDF page was visually inspected.

@@ -1,0 +1,86 @@
+{
+  "format": "OpenNet.RawCertificate/v1",
+  "variableCount": 3,
+  "variableData": [
+    {
+      "name": "x",
+      "spaceRef": {"tag": "named", "id": "bool:x"},
+      "stateRows": [
+        {"name": "true", "position": 2},
+        {"name": "false", "position": 1}
+      ],
+      "rank": 0
+    },
+    {
+      "name": "visible",
+      "spaceRef": {"tag": "named", "id": "bool:visible"},
+      "stateRows": [
+        {"name": "false", "position": 1},
+        {"name": "true", "position": 2}
+      ],
+      "rank": 1
+    },
+    {
+      "name": "hidden",
+      "spaceRef": {"tag": "named", "id": "bool:hidden"},
+      "stateRows": [
+        {"name": "true", "position": 2},
+        {"name": "false", "position": 1}
+      ],
+      "rank": 0
+    }
+  ],
+  "mechanisms": [
+    {
+      "name": "parity",
+      "kernelRef": {"tag": "named", "id": "kernel:parity"},
+      "target": 1,
+      "inputRows": [
+        {"varId": 0, "position": 2},
+        {"varId": 0, "position": 1}
+      ]
+    },
+    {
+      "name": "prior",
+      "kernelRef": {"tag": "named", "id": "kernel:prior"},
+      "target": 2,
+      "inputRows": []
+    }
+  ],
+  "inputs": [
+    {
+      "varId": 0,
+      "attrs": {
+        "name": "x",
+        "spaceRef": {"tag": "named", "id": "bool:x"},
+        "states": ["false", "true"]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "varId": 0,
+      "attrs": {
+        "name": "x",
+        "spaceRef": {"tag": "named", "id": "bool:x"},
+        "states": ["false", "true"]
+      }
+    },
+    {
+      "varId": 1,
+      "attrs": {
+        "name": "visible",
+        "spaceRef": {"tag": "named", "id": "bool:visible"},
+        "states": ["false", "true"]
+      }
+    },
+    {
+      "varId": 1,
+      "attrs": {
+        "name": "visible",
+        "spaceRef": {"tag": "named", "id": "bool:visible"},
+        "states": ["false", "true"]
+      }
+    }
+  ]
+}

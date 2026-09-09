@@ -1,0 +1,6 @@
+lake build check_certificate --wfail
+Build completed successfully (2206 jobs).
+lake exe check_certificate certificate-fixtures/mixed.json
+valid OpenNet.RawCertificate/v1: 3 variables, 2 mechanisms, 1 inputs, 3 outputs
+python3 scripts/test_certificates.py
+PASS: 64 compiled CLI certificate cases (syntax/schema/graph/I/O)

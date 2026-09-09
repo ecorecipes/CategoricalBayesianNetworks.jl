@@ -41,6 +41,13 @@ Every open network satisfies the **typed-interface rule** (checked by [`validate
 
 ## Wiring diagrams
 
+[`compose_structural`](@ref) is the sequential operation without a name-freshness
+restriction; it preserves distinct hidden parts even when their names coincide.
+The existing [`compose`](@ref) remains the name-safe compatibility wrapper.
+Repeated input occurrences are preserved by diagonal factor evaluation and
+per-occurrence copying. Ports carry their space references as well as names and
+ordered states; incompatible references are rejected instead of erased.
+
 [`to_wiring_diagram`](@ref) draws a network as a Catlab `WiringDiagram`: one box per mechanism with input ports in `input_position` order and one output port, a wire from the port producing each variable to every port consuming it (fan-out is an implicit copy, a dangling output an implicit discard), typed by [`VariablePort`](@ref)s and [`MechanismBox`](@ref)es. [`from_wiring_diagram`](@ref) inverts it on the round-trip subset (flat diagrams of single-output boxes), so `canonicalize(first(from_wiring_diagram(to_wiring_diagram(bn)))) == canonicalize(bn)`. `to_hom_expr(FreeMarkovCategory, d)` turns the diagram into a free expression through Catlab's junction normalisation (or [`wiring_expression`](@ref) when a box is entirely discarded). Catlab's `substitute` on the diagram agrees with [`substitute`](@ref) on the network.
 
 ## Categorical evaluation
@@ -50,6 +57,63 @@ Every open network satisfies the **typed-interface rule** (checked by [`validate
 [`interpret`](@ref) gives the kernel `⊗ inputs → ⊗ outputs` of an open network, and `interpret(compose(A, B)) ≈ compose(interpret(A), interpret(B))`, likewise for `otimes` (Propositions 2 and 3). Both are checked by the test suite here and proved in `BayesianNetworks.jl`'s Lean project for the abstract finite model (`Finite/Tensor.lean`, `Finite/Open.lean`), which also proves the closure theorem: composition along a matched interface preserves the typed-interface rule, acyclicity included.
 
 Every evaluator takes `atol`, the normalisation tolerance used for the validation, the per-mechanism kernel check and the kernel returned; a model read from a file at `atol = 1e-6` must be evaluated at `1e-6` as well.
+
+## The general syntax category in Lean
+
+The separate `proofs/` project proves a category of finite typed acyclic networks
+with arbitrary output legs, including copied outputs and pass-through variables.
+Its ordered parent lists allow repeated input occurrences. Inputs identify exactly
+the exogenous variables, and each internal generator produces one variable.
+Hidden components and empty interfaces are retained.
+
+Arrow equality is structural isomorphism. Total gluing and tensor preserve validity;
+the category and symmetric monoidal laws follow from concrete internal
+renumberings. The project supplies Mathlib `Category`, `MonoidalCategory`,
+`SymmetricCategory` and `CopyDiscardCategory` instances, plus both round trips to a
+general-legged presentation and a typed-apex pushout universal property.
+Only `propext`, `Classical.choice` and `Quot.sound` are permitted by its fail-closed
+audit.
+
+The explicit finite sum-product interpretation now gives a strong braided
+monoidal functor into the existing FinStoch category. It derives normalization
+from local normalized kernels and acyclic ranks and preserves composition,
+tensor, copy and discard. The exact output-first enumeration formula and
+ordered local CPT adapter are proved as well.
+
+This is not a quotient by numerical equality. Naturality of discard would be false
+for retained syntax; hidden mechanisms disappear under normalized interpretation
+instead. A full Julia runtime/array refinement remains separate work.
+In particular, the name-freshness condition of the Julia `compose` wrapper is
+stricter than mathematical composability. The earlier finite semantics and schema
+emitter remain in `BayesianNetworks.jl`, as recorded in ADR 0010.
+
+## Structural certificates
+
+[`open_network_certificate`](@ref) exports a JSON-compatible
+`OpenNet.RawCertificate/v1` record using dense 0-based variable indices and the
+actual 1-based state/input positions. It retains reference tags, boundary
+attributes, repeated slots/outputs, hidden components and a topological rank
+witness, without requiring globally unique names.
+
+The Lean-side finite record checker proves that acceptance constructs valid
+typed acyclic syntax. The executable `lake exe check_certificate PATH` in
+`proofs/` parses the versioned JSON and runs that checker, returning a nonzero
+status for malformed or invalid input. Integer fields require integer JSON
+tokens; fractional/exponent spellings are not coerced.
+
+Exporting a record is not a proof of the Julia exporter,
+the JSON implementation or floating-point evaluation. Numerical tables are
+deliberately outside this minimal structural payload.
+
+For complete raw part identities and operation witnesses,
+[`export_open_certificate`](@ref) and
+[`export_open_operation_certificate`](@ref) provide the distinct one-based
+`ecorecipes.open-network-certificate` 1.0.0 profile. It contains complete
+apex/foot rows, actual leg maps, and actual four-sort colimit cocones for
+composition/tensor, with an optional finite relational local signature.
+See [Raw cospan certificates](cospan_certificates.md) for resource limits and
+the difference between reference acceptance, kernel-checked instances and
+unproved general runtime refinement.
 
 ## Drawings
 

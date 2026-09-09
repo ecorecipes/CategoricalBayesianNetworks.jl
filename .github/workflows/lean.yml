@@ -1,0 +1,49 @@
+name: Lean
+on:
+  push:
+    branches: [main]
+    paths: ['proofs/**', '.github/workflows/lean.yml']
+  pull_request:
+    paths: ['proofs/**', '.github/workflows/lean.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: CategoricalBayesianNetworks.jl
+      - uses: actions/checkout@v4
+        with:
+          repository: ecorecipes/FiniteKernels.jl
+          path: FiniteKernels.jl
+      - uses: actions/checkout@v4
+        with:
+          repository: ecorecipes/BayesianNetworks.jl
+          path: BayesianNetworks.jl
+      - name: Use a local dependency directory
+        working-directory: CategoricalBayesianNetworks.jl/proofs
+        run: |
+          sed -i 's#^packagesDir = .*#packagesDir = ".lake/packages"#' lakefile.toml
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("lake-manifest.json")
+          manifest = json.loads(path.read_text())
+          manifest["packagesDir"] = ".lake/packages"
+          path.write_text(json.dumps(manifest, indent=1) + "\n")
+          PY
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: CategoricalBayesianNetworks.jl/proofs
+          use-github-cache: false
+          use-mathlib-cache: 'true'
+          build-args: "--wfail"
+      - name: Audit theorem dependencies
+        working-directory: CategoricalBayesianNetworks.jl/proofs
+        run: make audit
+      - name: Exercise the compiled JSON certificate reader
+        working-directory: CategoricalBayesianNetworks.jl/proofs
+        run: make check-certificates

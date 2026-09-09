@@ -1,0 +1,12 @@
+HTML: 38 Lean code blocks; all local assets exist: ['style.css', 'diagrams/mixed.svg', 'diagrams/stochastic.svg']
+PDF: 45 pages; normalization, functor, enumeration and final certificate declarations present.
+Visual inspection: viewed PDF pages 1, 30, 31, 35, 42 and 45, plus the standalone
+stochastic diagram. These include the rank-based inhabitance argument, finite
+normalization, braided monoidal/copy-discard proofs, the exact probability
+diagram, and executable certificate acceptance/rejection declarations.
+No clipped code or footer overlap was observed on these pages. Not every page
+was visually inspected. HTML was structurally checked, not browser-rendered.
+All PDF fonts are embedded: STIX Two Text, JuliaMono, and diagram Helvetica.
+Final log: zero missing characters, zero overfull horizontal boxes, zero unresolved
+LaTeX warnings; seven small overfull vertical boxes (maximum 3.07228pt) and
+42 underfull vertical boxes remain at long-code pagination.

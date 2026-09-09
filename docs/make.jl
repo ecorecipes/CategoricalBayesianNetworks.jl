@@ -4,7 +4,8 @@ using Documenter
 using DocumenterCitations
 using CategoricalBayesianNetworks
 
-DocMeta.setdocmeta!(CategoricalBayesianNetworks, :DocTestSetup, :(using CategoricalBayesianNetworks); recursive=true)
+DocMeta.setdocmeta!(CategoricalBayesianNetworks, :DocTestSetup,
+                    :(using CategoricalBayesianNetworks); recursive=true)
 
 # Tutorials are rendered quarto vignettes copied into docs/src/tutorials by
 # scripts/sync_vignettes.jl. The page list is built from the files on disk so
@@ -26,7 +27,8 @@ function tutorial_pages()
     end
 end
 
-pages = Any["Home" => "index.md", "API Reference" => "api.md",
+pages = Any["Home" => "index.md", "Raw cospan certificates" => "cospan_certificates.md",
+            "API Reference" => "api.md",
             "References" => "references.md"]
 tutorials = tutorial_pages()
 isempty(tutorials) || push!(pages, "Tutorials" => tutorials)

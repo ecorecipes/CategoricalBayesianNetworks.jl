@@ -1,0 +1,22 @@
+Lean (version 4.30.0, arm64-apple-darwin24.6.0, commit d024af099ca4bf2c86f649261ebf59565dc8c622, Release)
+pandoc 3.8.2
+This is LuaHBTeX, Version 1.21.0 (TeX Live 2025)
+dot - graphviz version 14.0.1 (20251006.0113)
+
+Pinned Lake dependencies
+packagesDir: ../../.lake-packages
+mathlib v4.30.0 c5ea00351c28e24afc9f0f84379aa41082b1188f
+mdgen v4.30.0 8a448a570399ae674d0b0031d8c912c17665bea3
+
+Lean source sizes
+     149 CategoricalBayesianNetworksProofs/Category.lean
+      99 CategoricalBayesianNetworksProofs/CopyDiscard.lean
+     151 CategoricalBayesianNetworksProofs/Examples.lean
+     281 CategoricalBayesianNetworksProofs/Legged.lean
+     189 CategoricalBayesianNetworksProofs/Monoidal.lean
+     135 CategoricalBayesianNetworksProofs/Pushout.lean
+     217 CategoricalBayesianNetworksProofs/Syntax.lean
+     174 CategoricalBayesianNetworksProofs/Tensor.lean
+     111 CategoricalBayesianNetworksProofs/Wiring.lean
+      72 Audit.lean
+    1578 total

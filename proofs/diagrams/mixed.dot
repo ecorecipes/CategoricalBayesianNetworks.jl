@@ -1,0 +1,23 @@
+digraph mixed {
+  graph [rankdir=LR, bgcolor="white", pad=0.2, nodesep=0.4, ranksep=0.6];
+  node [fontname="Helvetica", fontsize=12, color="#334155"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569", arrowsize=0.7];
+  x [label="input x", shape=ellipse];
+  m [label="mechanism false\nlabel 2", shape=box, style=rounded];
+  gm [label="generated\nvariable false", shape=ellipse];
+  h [label="hidden mechanism true\nlabel 0", shape=box, style=rounded];
+  gh [label="hidden\nvariable true", shape=ellipse];
+  o0 [label="output 0", shape=plaintext];
+  o1 [label="output 1", shape=plaintext];
+  o2 [label="output 2", shape=plaintext];
+  x -> m [label="slot 0"];
+  x -> m [label="slot 1"];
+  m -> gm;
+  h -> gh;
+  x -> o0 [label="pass-through", color="#0369a1"];
+  gm -> o1 [color="#0369a1"];
+  gm -> o2 [label="copied", color="#0369a1"];
+  { rank=same; m; h; }
+  { rank=same; gm; gh; }
+  { rank=same; o0; o1; o2; }
+}

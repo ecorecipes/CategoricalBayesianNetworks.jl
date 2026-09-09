@@ -13,7 +13,7 @@ evaluators -- and this package adds what genuinely needs a category-theory libra
   - **Open networks** (`src/open.jl`): [`OpenBayesNet`](@ref) as a Catlab structured
     multicospan on the `Variable` / `State` interface, built with [`Open`](@ref), and
     the typed-interface rule its validation enforces.
-  - **Composition** (`src/composition.jl`): [`compose`](@ref), [`glue`](@ref),
+  - **Composition** (`src/composition.jl`): [`compose`](@ref), [`compose_structural`](@ref), [`glue`](@ref),
     [`otimes`](@ref), [`oapply`](@ref) over undirected wiring diagrams, and
     [`substitute`](@ref), every one of them a pushout or coproduct of ACSets.
   - **Wiring diagrams** (`src/wiring.jl`): the directed-wiring-diagram view
@@ -35,7 +35,8 @@ using Catlab.CategoricalAlgebra: StructuredCospan, StructuredMulticospan,
                                  StructuredCospanOb,
                                  OpenACSetTypes, OpenACSetLeg, apex, legs, feet, left,
                                  right,
-                                 force, components, is_natural, infer_acset_cat, pushout
+                                 force, components, is_natural, infer_acset_cat, pushout,
+                                 Cospan, coproduct, copair
 using Catlab.WiringDiagrams: UndirectedWiringDiagram, nboxes, boxes, ports, junction,
                              WiringDiagram, Box, Port, Wire, InputPort, OutputPort,
                              add_box!, add_wire!, input_id, output_id, box_ids, box,
@@ -53,6 +54,7 @@ using BayesianNetworks
 # interface, and this package is the only consumer.
 using BayesianNetworks: BayesianNetworks, AbstractVariableSpace, AbstractBayesNet,
                         BayesNetUntyped, VariableSpace, VariableSpaceUntyped,
+                        JSON3, StructTypes,
                         DEFAULT_MAX_STATES, _closed_semantics, _complete_spaces,
                         _factors, _in_range, _joint_atol, _mechanism_id, _state_table,
                         _mechanism_spaces, _product, _variable_id, _with
@@ -91,7 +93,11 @@ export OpenBayesNetObUntyped, OpenBayesNetUntyped, OpenBayesNetOb, OpenBayesNet,
        outputs, input_space, output_space, input_variables, output_variables, left_leg,
        right_leg
 # composition.jl
-export interface_matches, glue, validate_composition, substitute
+export interface_matches, compose_structural, glue, validate_composition, substitute
+# certificates.jl
+export open_network_certificate
+# cospan_certificates.jl
+export export_open_certificate, export_open_operation_certificate, OpenCertificateError
 # wiring.jl
 export VariablePort, MechanismBox, BayesWiringDiagram, from_wiring_diagram,
        wiring_expression
@@ -100,6 +106,8 @@ export to_free_expression, free_generators, categorical_joint, interpret
 
 include("open.jl")
 include("composition.jl")
+include("certificates.jl")
+include("cospan_certificates.jl")
 include("rename.jl")
 include("wiring.jl")
 include("evaluation.jl")

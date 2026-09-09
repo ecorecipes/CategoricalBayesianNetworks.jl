@@ -1,0 +1,601 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ecorecipes:open-network-certificate:1.0.0",
+  "title": "Raw typed open-network certificate, version 1.0.0",
+  "description": "Comparison metadata is not attestation of installed Julia code.",
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$"
+    },
+    "id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 256
+    },
+    "reference": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "NoRef"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "NamedRef"
+            },
+            "id": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "type",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "PointMassRef"
+            },
+            "state": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "type",
+            "state"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "PolicyRef"
+            },
+            "decision": {
+              "$ref": "#/$defs/text"
+            }
+          },
+          "required": [
+            "type",
+            "decision"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "producer": {
+          "$ref": "#/$defs/text"
+        },
+        "producer_version": {
+          "$ref": "#/$defs/text"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$"
+        },
+        "comparison_authority": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "const": "comparison-only"
+            },
+            "manifest_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "role",
+            "manifest_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "producer",
+        "producer_version",
+        "description",
+        "comparison_authority"
+      ],
+      "additionalProperties": false
+    },
+    "VariableRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "variable_name": {
+          "$ref": "#/$defs/text"
+        },
+        "space_ref": {
+          "$ref": "#/$defs/reference"
+        }
+      },
+      "required": [
+        "id",
+        "variable_name",
+        "space_ref"
+      ],
+      "additionalProperties": false
+    },
+    "StateRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "state_variable": {
+          "$ref": "#/$defs/id"
+        },
+        "state_name": {
+          "$ref": "#/$defs/text"
+        },
+        "state_position": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "id",
+        "state_variable",
+        "state_name",
+        "state_position"
+      ],
+      "additionalProperties": false
+    },
+    "MechanismRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "target": {
+          "$ref": "#/$defs/id"
+        },
+        "mechanism_name": {
+          "$ref": "#/$defs/text"
+        },
+        "kernel_ref": {
+          "$ref": "#/$defs/reference"
+        }
+      },
+      "required": [
+        "id",
+        "target",
+        "mechanism_name",
+        "kernel_ref"
+      ],
+      "additionalProperties": false
+    },
+    "InputRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "input_mechanism": {
+          "$ref": "#/$defs/id"
+        },
+        "input_variable": {
+          "$ref": "#/$defs/id"
+        },
+        "input_position": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "id",
+        "input_mechanism",
+        "input_variable",
+        "input_position"
+      ],
+      "additionalProperties": false
+    },
+    "attribute": {
+      "type": "object",
+      "properties": {
+        "variable_name": {
+          "$ref": "#/$defs/text"
+        },
+        "space_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "variable_name",
+        "space_ref",
+        "states"
+      ],
+      "additionalProperties": false
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "mechanism_name": {
+          "$ref": "#/$defs/text"
+        },
+        "kernel_ref": {
+          "$ref": "#/$defs/reference"
+        }
+      },
+      "required": [
+        "mechanism_name",
+        "kernel_ref"
+      ],
+      "additionalProperties": false
+    },
+    "apex": {
+      "type": "object",
+      "properties": {
+        "Variable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VariableRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "State": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StateRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "Mechanism": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MechanismRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "Input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InputRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "Variable",
+        "State",
+        "Mechanism",
+        "Input"
+      ],
+      "additionalProperties": false
+    },
+    "foot": {
+      "type": "object",
+      "properties": {
+        "Variable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VariableRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "State": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StateRow"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "Variable",
+        "State"
+      ],
+      "additionalProperties": false
+    },
+    "leg": {
+      "type": "object",
+      "properties": {
+        "foot": {
+          "$ref": "#/$defs/foot"
+        },
+        "Variable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "State": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "foot",
+        "Variable",
+        "State"
+      ],
+      "additionalProperties": false
+    },
+    "open": {
+      "type": "object",
+      "properties": {
+        "apex": {
+          "$ref": "#/$defs/apex"
+        },
+        "input": {
+          "$ref": "#/$defs/leg"
+        },
+        "output": {
+          "$ref": "#/$defs/leg"
+        }
+      },
+      "required": [
+        "apex",
+        "input",
+        "output"
+      ],
+      "additionalProperties": false
+    },
+    "maps": {
+      "type": "object",
+      "properties": {
+        "Variable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "State": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "Mechanism": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "Input": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "Variable",
+        "State",
+        "Mechanism",
+        "Input"
+      ],
+      "additionalProperties": false
+    },
+    "signature": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "unrestricted"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "finite-relation"
+            },
+            "entries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/label"
+                  },
+                  "inputs": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/attribute"
+                    },
+                    "minItems": 0,
+                    "maxItems": 256
+                  },
+                  "output": {
+                    "$ref": "#/$defs/attribute"
+                  }
+                },
+                "required": [
+                  "label",
+                  "inputs",
+                  "output"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 512
+            }
+          },
+          "required": [
+            "kind",
+            "entries"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "ecorecipes.open-network-certificate"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "index_base": {
+          "const": 1
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        },
+        "kind": {
+          "const": "network"
+        },
+        "networks": {
+          "type": "object",
+          "properties": {
+            "C": {
+              "$ref": "#/$defs/open"
+            }
+          },
+          "required": [
+            "C"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "index_base",
+        "metadata",
+        "signature",
+        "kind",
+        "networks"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "ecorecipes.open-network-certificate"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "index_base": {
+          "const": 1
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "signature": {
+          "$ref": "#/$defs/signature"
+        },
+        "kind": {
+          "enum": [
+            "compose_structural",
+            "otimes"
+          ]
+        },
+        "networks": {
+          "type": "object",
+          "properties": {
+            "A": {
+              "$ref": "#/$defs/open"
+            },
+            "B": {
+              "$ref": "#/$defs/open"
+            },
+            "C": {
+              "$ref": "#/$defs/open"
+            }
+          },
+          "required": [
+            "A",
+            "B",
+            "C"
+          ],
+          "additionalProperties": false
+        },
+        "cocone": {
+          "type": "object",
+          "properties": {
+            "A": {
+              "$ref": "#/$defs/maps"
+            },
+            "B": {
+              "$ref": "#/$defs/maps"
+            }
+          },
+          "required": [
+            "A",
+            "B"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "index_base",
+        "metadata",
+        "signature",
+        "kind",
+        "networks",
+        "cocone"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

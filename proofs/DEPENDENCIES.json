@@ -1,0 +1,201 @@
+{
+  "description": "Exact transitive same-prover Lean source closure; external libraries pinned below.",
+  "sources": [
+    {
+      "path": "BayesianNetworks.jl/proofs/BayesianNetworksProofs/Finite/BayesNet.lean",
+      "sha256": "ecb2317c74e8330e2fbbe599970cfa457a7fd29650ad2a91e3c7fd480c596922"
+    },
+    {
+      "path": "BayesianNetworks.jl/proofs/BayesianNetworksProofs/Finite/Evaluation.lean",
+      "sha256": "2e6f50e2db80892d8186c94dc939c053f7f82e08c825a08c0fda1e97d1a89af5"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/Audit.lean",
+      "sha256": "c66ebfc07bb38dab6c1ef674c7ec38aaca858ef16439cc4aa4d88ec767ab5353"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/ApexEnumeration.lean",
+      "sha256": "79aff7c798dbbfcc44f71ead68660d8a1d1d29254df915aed51acff9b5d98391"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Assignments.lean",
+      "sha256": "7335f129522111c61009540acfbb2d4030d5b6b3f5a4c1844f501c564edf2b5b"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Category.lean",
+      "sha256": "1e3bf9b3e881c3dca2920f93fa19ac9277c98882a1a31962c7c8775ef1f51da4"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/CertificateExamples.lean",
+      "sha256": "ef1dfe237d05cf039b0ed48d96cbe3a3fb097d71e350eb6787f6ac55d106d1f3"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/CertificateJSON.lean",
+      "sha256": "8ce4b184277709421aa87e947b0df022c406c8bad09aa59e91d4b3a2199c8aba"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/CertificateSyntax.lean",
+      "sha256": "da46aa05bba695935a919fb8083dfeb24f4419d7389bab46310e694afe87681e"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/CopyDiscard.lean",
+      "sha256": "277a6e27313e807b7da9df08904bcf67d23ad5800bfe03304d064db440d80cc9"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Examples.lean",
+      "sha256": "aee7bb3dff5763fb98c8c7b32a6263a2969a3aa925bcc3d76183d130953a7f1b"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/InterpretationFunctor.lean",
+      "sha256": "e30199a37aebcc29c96a250a64324a8d5aa719146eb80271beac1a8f42360715"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Legged.lean",
+      "sha256": "c0f774fa589d3a082ffe01cdac0c91f8579cc9c8d11ca9906fef96119159f313"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/LocalTables.lean",
+      "sha256": "b211fc114d4b8ebf8b6411071742132a240f3bc9b40951b31e6cf17f8aaa4dd8"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Monoidal.lean",
+      "sha256": "4ec8e160af5134b52c88c8afc5b3c651d40615b9cbe48aa1638e1746d4886eaf"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Normalization.lean",
+      "sha256": "a2c2644e7d16d970e013deb9fc474dc0b2675c42feaacc3e67b232109c154a6c"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Pushout.lean",
+      "sha256": "1aa3684cb43e7528a06ae5404cc89c8c1fc6c6d7e69dcaca80b004115f9e4a75"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/RawCertificate.lean",
+      "sha256": "73d83c10e256782de4efd7292db4512491bef1d66a4239f8c45db562c00850b6"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/SemanticExamples.lean",
+      "sha256": "888029ae5314941c76a4d58101058f453440fde0238f1dd9b9477843ce3b41c1"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/SemanticTensor.lean",
+      "sha256": "560821e43a7733dd608136113b5d24acb2ab914ccf38106d14bc0af016674dda"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Semantics.lean",
+      "sha256": "990a706661969b79a72ed01d42313262090b565396c876dd3774785235c5eede"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Syntax.lean",
+      "sha256": "ffd4287a12125e8accd7192108d5aef59ca61d2f3122c081a0a129f1320b2659"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Tensor.lean",
+      "sha256": "e98498660298175cbc0b78ac7ecb20b3fdf8031ba4507cd50bad26aaf69055e6"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs/Wiring.lean",
+      "sha256": "85cefe70d7b136ee2b3b8ab90c3c0d282eecdcbcb3c1cb90fd8854953e5cbb71"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CategoricalBayesianNetworksProofs.lean",
+      "sha256": "0f3a14fd5b855891ea4ebc344bc30bf0ce8767d87e01601f95eeffe8c08dea61"
+    },
+    {
+      "path": "CategoricalBayesianNetworks.jl/proofs/CertificateMain.lean",
+      "sha256": "75e4b281da24f474c278314aa833c7f5182448647c5cffc9efa2c0e14e805438"
+    },
+    {
+      "path": "FiniteKernels.jl/proofs/FiniteKernelsProofs/Finite/Kernel.lean",
+      "sha256": "a177d76e2daba50d312456d06c86784e6f4d7fbbdffbbc9b00a6ef4e18011826"
+    },
+    {
+      "path": "FiniteKernels.jl/proofs/FiniteKernelsProofs/Finite/Laws.lean",
+      "sha256": "556fb6902944ff04fe73556cf20f3c8281b810b8fc55e1def07e244f9267e0eb"
+    },
+    {
+      "path": "FiniteKernels.jl/proofs/FiniteKernelsProofs/Theory/FinStoch.lean",
+      "sha256": "e0080c9982c885d2944413fb67c1ffe622b922ff28e25e1b4eafda27479ddfe6"
+    }
+  ],
+  "external_imports": [
+    "Lean.Data.Json.Parser",
+    "Mathlib.Algebra.BigOperators.Group.Finset.Basic",
+    "Mathlib.Algebra.BigOperators.Ring.Finset",
+    "Mathlib.Algebra.Order.BigOperators.Group.Finset",
+    "Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset",
+    "Mathlib.CategoryTheory.Category.Basic",
+    "Mathlib.CategoryTheory.CopyDiscardCategory.Basic",
+    "Mathlib.CategoryTheory.MarkovCategory.Basic",
+    "Mathlib.CategoryTheory.Monoidal.Braided.Basic",
+    "Mathlib.CategoryTheory.Monoidal.Category",
+    "Mathlib.CategoryTheory.Monoidal.Functor",
+    "Mathlib.Data.Finset.Lattice.Fold",
+    "Mathlib.Data.Fintype.BigOperators",
+    "Mathlib.Data.Fintype.Pi",
+    "Mathlib.Data.Fintype.Prod",
+    "Mathlib.Data.Fintype.Sum",
+    "Mathlib.Data.List.Sort",
+    "Mathlib.Data.Real.Basic",
+    "Mathlib.Logic.Equiv.Basic",
+    "Mathlib.Logic.Relation",
+    "Mathlib.Tactic.Common",
+    "Mathlib.Tactic.FinCases",
+    "Mathlib.Tactic.Linarith",
+    "Mathlib.Tactic.NormNum",
+    "Mathlib.Tactic.Ring",
+    "Mathlib.Util.AssertNoSorry"
+  ],
+  "git_dependencies": [
+    {
+      "name": "mathlib",
+      "rev": "c5ea00351c28e24afc9f0f84379aa41082b1188f",
+      "inputRev": "v4.30.0"
+    },
+    {
+      "name": "mdgen",
+      "rev": "8a448a570399ae674d0b0031d8c912c17665bea3",
+      "inputRev": "v4.30.0"
+    },
+    {
+      "name": "plausible",
+      "rev": "a456461b368b71d2accd95234832cd9c174b5437",
+      "inputRev": "main"
+    },
+    {
+      "name": "LeanSearchClient",
+      "rev": "c5d5b8fe6e5158def25cd28eb94e4141ad97c843",
+      "inputRev": "main"
+    },
+    {
+      "name": "importGraph",
+      "rev": "515cf9d0c00ece5e661f6de4326a53dedc1e8ea1",
+      "inputRev": "main"
+    },
+    {
+      "name": "proofwidgets",
+      "rev": "a84b3e2475d5c5ab979567b1ad8aea21b764bcf8",
+      "inputRev": "v0.0.99"
+    },
+    {
+      "name": "aesop",
+      "rev": "558915ae105bfd8074e22d597613d1961822adc2",
+      "inputRev": "v4.30.0"
+    },
+    {
+      "name": "Qq",
+      "rev": "a6e6c34c4ef182f83b219a3a5a385f51f44bdc4c",
+      "inputRev": "v4.30.0"
+    },
+    {
+      "name": "batteries",
+      "rev": "32dc18cde3684679f3c003de608743b57498c56f",
+      "inputRev": "main"
+    },
+    {
+      "name": "Cli",
+      "rev": "6b907cf12b2e445ccb7c24bc208ef04a1f39e84c",
+      "inputRev": "v4.30.0"
+    }
+  ]
+}

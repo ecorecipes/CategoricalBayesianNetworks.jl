@@ -49,6 +49,59 @@ categorical side and `FiniteKernels.jl` → `BayesianNetworks.jl` →
   drawn with a dashed or bold border) and on a wiring diagram (Catlab's renderer, with the
   mechanism and variable names as labels).
 
+## Formal category
+
+The Lean project in [`proofs/`](proofs/) constructs the category of finite typed
+acyclic network syntax with **general boundary maps**. Outputs may copy a variable
+or pass an input through; parent lists retain repeated slots; empty feet and hidden
+components are allowed. Equality is structural isomorphism, not numerical
+equivalence. Concrete gluing, its pushout property, derived acyclicity, identities,
+associativity, tensor, symmetry and coherent copy/discard are proved, with actual
+Mathlib `Category`, `MonoidalCategory`, `SymmetricCategory` and
+`CopyDiscardCategory` instances.
+
+An independently defined general-legged presentation is proved equivalent to the
+canonical inputs-plus-generators representation. Types and mechanism labels may
+carry attributes, which the isomorphisms preserve. This is not a verified parser
+or refinement of the Julia runtime, and it does not make the name-sensitive
+`compose` wrapper total. `compose_structural` is the corresponding structural
+runtime operation.
+
+The project now also proves the actual finite sum-product interpretation,
+normalization from local kernels and acyclic ranks, and a **strong braided
+monoidal functor into the existing FinStoch category**, preserving composition,
+tensor, copy and discard. General finite signature state types may even be empty.
+Ordered CPT and output-first enumeration bridges retain repeated slots and
+copied/pass-through outputs. Raw syntax remains non-Markov: discarded mechanisms
+disappear under normalized semantics, not under structural equality.
+
+`open_network_certificate(o; ranks=nothing)` exports
+`OpenNet.RawCertificate/v1` records with dense part-ID indices, original
+positions, full reference tags, attributed feet and a rank witness. The Lean
+record checker constructs a valid general-legged network from acceptance.
+`lake exe check_certificate PATH` in `proofs/` now reads the actual versioned
+JSON, checks bounds/tags/fields and invokes that checker. It rejects malformed
+JSON or invalid records with a nonzero exit status.
+This structural certificate does not contain numerical tables or certify
+Julia's compiler, floating-point arithmetic or the exporter implementation itself.
+See [`proofs/SEMANTICS-REPORT.md`](proofs/SEMANTICS-REPORT.md) and
+[`proofs/EXPORTER-CONTRACT.md`](proofs/EXPORTER-CONTRACT.md).
+The JSON-reader soundness and exact translation boundary are documented in
+[`proofs/JSON-REPORT.md`](proofs/JSON-REPORT.md).
+
+`export_open_certificate` and `export_open_operation_certificate` additionally
+capture the **complete one-based raw cospan** profile, including both full
+feet and the actual four-sort cocone maps from composition/tensor. They
+preserve shuffled raw positions, repeated names/slots/outputs and hidden
+material; optional signatures are finite relations, not label-keyed functions.
+This is a separate data format for reference checking and concrete HOL4
+proof attempts, not a Julia/compiler theorem. See the
+[raw cospan guide](docs/src/cospan_certificates.md).
+
+`lake build --wfail`, `make audit` and `make docs` in `proofs/` build the development,
+enforce the permitted axiom/source policy and generate the full readable proof
+documents. See [ADR 0010](docs/adr/0010-general-open-network-proof-layer.md).
+
 ## Installation
 
 The ecosystem packages are not registered. Install this package and its ecosystem
@@ -66,6 +119,12 @@ Pkg.add(url="https://github.com/ecorecipes/CategoricalBayesianNetworks.jl")
 Requires Julia ≥ 1.12.
 
 ## Quick Start
+
+`compose_structural(A, B)` provides sequential structural gluing on matching
+valid interfaces, retaining duplicate names on distinct hidden parts. `compose`
+keeps its existing name-safe policy. Use part ids or explicit renaming before
+passing a structurally composed network with duplicate names to name-based APIs.
+Repeated input slots and non-default space references survive the wiring bridge.
 
 ```julia
 using CategoricalBayesianNetworks
@@ -96,8 +155,9 @@ nboxes(d), nwires(d)                        # (7, 13)
 evaluate(to_hom_expr(FreeMarkovCategory, d), free_generators(m)) ≈ J   # true
 
 # The semantics of an open network, and its compositionality (Propositions 2 and 3).
-kA, kB = interpret(A, m), interpret(B, m)
-interpret(compose(A, B), m) ≈ compose(kA, kB)   # true
+by_name = Dict(x => kernel(m, x) for x in variable_names(syntax(m)))
+kA, kB = interpret(A, by_name), interpret(B, by_name)
+interpret(compose(A, B), by_name) ≈ compose(kA, kB)   # true
 to_graphviz(d)                                  # the wiring diagram, as SVG
 ```
 

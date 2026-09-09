@@ -1,0 +1,27 @@
+Lean (version 4.30.0, arm64-apple-darwin24.6.0, commit d024af099ca4bf2c86f649261ebf59565dc8c622, Release)
+pandoc 3.8.2
+This is LuaHBTeX, Version 1.21.0 (TeX Live 2025)
+dot - graphviz version 14.0.1 (20251006.0113)
+
+Source sizes
+      81 CategoricalBayesianNetworksProofs/ApexEnumeration.lean
+     171 CategoricalBayesianNetworksProofs/Assignments.lean
+     149 CategoricalBayesianNetworksProofs/Category.lean
+      60 CategoricalBayesianNetworksProofs/CertificateExamples.lean
+      99 CategoricalBayesianNetworksProofs/CopyDiscard.lean
+     151 CategoricalBayesianNetworksProofs/Examples.lean
+     176 CategoricalBayesianNetworksProofs/InterpretationFunctor.lean
+     281 CategoricalBayesianNetworksProofs/Legged.lean
+     105 CategoricalBayesianNetworksProofs/LocalTables.lean
+     189 CategoricalBayesianNetworksProofs/Monoidal.lean
+     139 CategoricalBayesianNetworksProofs/Normalization.lean
+     135 CategoricalBayesianNetworksProofs/Pushout.lean
+     214 CategoricalBayesianNetworksProofs/RawCertificate.lean
+     150 CategoricalBayesianNetworksProofs/SemanticExamples.lean
+     158 CategoricalBayesianNetworksProofs/Semantics.lean
+     106 CategoricalBayesianNetworksProofs/SemanticTensor.lean
+     217 CategoricalBayesianNetworksProofs/Syntax.lean
+     174 CategoricalBayesianNetworksProofs/Tensor.lean
+     111 CategoricalBayesianNetworksProofs/Wiring.lean
+     157 Audit.lean
+    3023 total

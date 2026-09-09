@@ -12,6 +12,8 @@ Simon Frost
 - [Substitution](#substitution)
 - [Semantics of open networks:
   compositionality](#semantics-of-open-networks-compositionality)
+- [Structural composition, names and repeated
+  ports](#structural-composition-names-and-repeated-ports)
 - [Unrolling a dynamic network is
   gluing](#unrolling-a-dynamic-network-is-gluing)
 - [Summary](#summary)
@@ -310,6 +312,70 @@ interpret(C, by_name) ≈ marginal(m, :Occupancy)
 ```
 
     true
+
+## Structural composition, names and repeated ports
+
+Names are convenient lookup keys, not a criterion for whether two hidden
+components can coexist. `compose` retains its name-safe compatibility
+policy; `compose_structural` performs the total structural gluing on
+matching valid feet.
+
+``` julia
+scalar = Open(bayesnet(:Hidden => [:no, :yes]))
+try
+    compose(scalar, scalar)
+catch e
+    sprint(showerror, e)
+end
+```
+
+    "DuplicateNameError: 2 Variable parts named :Hidden (ids 1, 2)"
+
+``` julia
+two_hidden = compose_structural(scalar, scalar)
+(variables = variable_names(apex(two_hidden)),
+ mechanisms = nparts(apex(two_hidden), :Mechanism),
+ valid = validate(two_hidden) === nothing)
+```
+
+    (variables = [:Hidden, :Hidden], mechanisms = 2, valid = true)
+
+Both mechanisms remain. A duplicate name is not an instruction to merge
+them or discard one. Use part ids, stable kernel references, or explicit
+renaming when subsequent APIs require unique names.
+
+Ordered input occurrences also remain distinct even when they carry one
+variable:
+
+``` julia
+repeated = bayesnet(:X => [:no, :yes], :Y => [:no, :yes];
+                   mechanisms = [:Y => (:X, :X)])
+same = zeros(2, 2, 2)
+for i in 1:2, j in 1:2
+    same[i, j, i == j ? 2 : 1] = 1.0
+end
+rm = bind_cpt(BayesModel(repeated), [:X => [0.4, 0.6], :Y => same])
+(slot_count = length(inputs(syntax(rm), mechanism_of(syntax(rm), :Y))),
+ copied_value = marginal(rm, :Y).table,
+ expression_agrees = categorical_joint(rm) ≈ joint_distribution(rm))
+```
+
+    (slot_count = 2, copied_value = [0.0, 1.0], expression_agrees = true)
+
+The factor representation takes the diagonal of the repeated-slot CPT.
+The free-expression builder supplies one copy per occurrence and retains
+a wire for the original variable. This is one draw used twice, not two
+independent draws. Port metadata survives the same representation
+boundary:
+
+``` julia
+annotated = bayesnet(:Habitat => [:poor, :good];
+                    space_refs = Dict(:Habitat => NamedRef("habitat-space")))
+back = first(from_wiring_diagram(to_wiring_diagram(annotated)))
+(reference = space_ref(back, :Habitat), round_trip = is_isomorphic(annotated, back))
+```
+
+    (reference = NamedRef("habitat-space"), round_trip = true)
 
 ## Unrolling a dynamic network is gluing
 

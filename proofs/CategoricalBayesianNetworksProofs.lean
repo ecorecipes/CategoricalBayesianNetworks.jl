@@ -1,0 +1,4 @@
+import CategoricalBayesianNetworksProofs.Examples
+import CategoricalBayesianNetworksProofs.CertificateExamples
+import CategoricalBayesianNetworksProofs.LocalTables
+import CategoricalBayesianNetworksProofs.CertificateJSON

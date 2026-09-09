@@ -2235,6 +2235,7 @@ vertical-align: -.125em;
   <li><a href="#tensor-and-undirected-wiring-diagrams" id="toc-tensor-and-undirected-wiring-diagrams" class="nav-link" data-scroll-target="#tensor-and-undirected-wiring-diagrams">Tensor and undirected wiring diagrams</a></li>
   <li><a href="#substitution" id="toc-substitution" class="nav-link" data-scroll-target="#substitution">Substitution</a></li>
   <li><a href="#semantics-of-open-networks-compositionality" id="toc-semantics-of-open-networks-compositionality" class="nav-link" data-scroll-target="#semantics-of-open-networks-compositionality">Semantics of open networks: compositionality</a></li>
+  <li><a href="#structural-composition-names-and-repeated-ports" id="toc-structural-composition-names-and-repeated-ports" class="nav-link" data-scroll-target="#structural-composition-names-and-repeated-ports">Structural composition, names and repeated ports</a></li>
   <li><a href="#unrolling-a-dynamic-network-is-gluing" id="toc-unrolling-a-dynamic-network-is-gluing" class="nav-link" data-scroll-target="#unrolling-a-dynamic-network-is-gluing">Unrolling a dynamic network is gluing</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -2500,17 +2501,68 @@ OpenBayesNet(5 variables, 4 mechanisms; [:SoilMoisture] -&gt; [:Occupancy])</cod
 </div>
 </div>
 </section>
+<section id="structural-composition-names-and-repeated-ports" class="level2">
+<h2 class="anchored" data-anchor-id="structural-composition-names-and-repeated-ports">Structural composition, names and repeated ports</h2>
+<p>Names are convenient lookup keys, not a criterion for whether two hidden components can coexist. <code>compose</code> retains its name-safe compatibility policy; <code>compose_structural</code> performs the total structural gluing on matching valid feet.</p>
+<div id="42" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>scalar <span class="op">=</span> <span class="fu">Open</span>(<span class="fu">bayesnet</span>(<span class="op">:</span>Hidden <span class="op">=&gt;</span> [<span class="op">:</span>no, <span class="op">:</span>yes]))</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">compose</span>(scalar, scalar)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="cf">catch</span> <span class="cn">e</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprint</span>(showerror, <span class="cn">e</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>&quot;DuplicateNameError: 2 Variable parts named :Hidden (ids 1, 2)&quot;</code></pre>
+</div>
+</div>
+<div id="44" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>two_hidden <span class="op">=</span> <span class="fu">compose_structural</span>(scalar, scalar)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>(variables <span class="op">=</span> <span class="fu">variable_names</span>(<span class="fu">apex</span>(two_hidden)),</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a> mechanisms <span class="op">=</span> <span class="fu">nparts</span>(<span class="fu">apex</span>(two_hidden), <span class="op">:</span>Mechanism),</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a> valid <span class="op">=</span> <span class="fu">validate</span>(two_hidden) <span class="op">===</span> <span class="cn">nothing</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(variables = [:Hidden, :Hidden], mechanisms = 2, valid = true)</code></pre>
+</div>
+</div>
+<p>Both mechanisms remain. A duplicate name is not an instruction to merge them or discard one. Use part ids, stable kernel references, or explicit renaming when subsequent APIs require unique names.</p>
+<p>Ordered input occurrences also remain distinct even when they carry one variable:</p>
+<div id="46" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>repeated <span class="op">=</span> <span class="fu">bayesnet</span>(<span class="op">:</span>X <span class="op">=&gt;</span> [<span class="op">:</span>no, <span class="op">:</span>yes], <span class="op">:</span>Y <span class="op">=&gt;</span> [<span class="op">:</span>no, <span class="op">:</span>yes];</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>                   mechanisms <span class="op">=</span> [<span class="op">:</span>Y <span class="op">=&gt;</span> (<span class="op">:</span>X, <span class="op">:</span>X)])</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>same <span class="op">=</span> <span class="fu">zeros</span>(<span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, j <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    same[i, j, i <span class="op">==</span> j ? <span class="fl">2</span> <span class="op">:</span> <span class="fl">1</span>] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>rm <span class="op">=</span> <span class="fu">bind_cpt</span>(<span class="fu">BayesModel</span>(repeated), [<span class="op">:</span>X <span class="op">=&gt;</span> [<span class="fl">0.4</span>, <span class="fl">0.6</span>], <span class="op">:</span>Y <span class="op">=&gt;</span> same])</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>(slot_count <span class="op">=</span> <span class="fu">length</span>(<span class="fu">inputs</span>(<span class="fu">syntax</span>(rm), <span class="fu">mechanism_of</span>(<span class="fu">syntax</span>(rm), <span class="op">:</span>Y))),</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a> copied_value <span class="op">=</span> <span class="fu">marginal</span>(rm, <span class="op">:</span>Y).table,</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a> expression_agrees <span class="op">=</span> <span class="fu">categorical_joint</span>(rm) <span class="op">≈</span> <span class="fu">joint_distribution</span>(rm))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(slot_count = 2, copied_value = [0.0, 1.0], expression_agrees = true)</code></pre>
+</div>
+</div>
+<p>The factor representation takes the diagonal of the repeated-slot CPT. The free-expression builder supplies one copy per occurrence and retains a wire for the original variable. This is one draw used twice, not two independent draws. Port metadata survives the same representation boundary:</p>
+<div id="48" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>annotated <span class="op">=</span> <span class="fu">bayesnet</span>(<span class="op">:</span>Habitat <span class="op">=&gt;</span> [<span class="op">:</span>poor, <span class="op">:</span>good];</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                    space_refs <span class="op">=</span> <span class="fu">Dict</span>(<span class="op">:</span>Habitat <span class="op">=&gt;</span> <span class="fu">NamedRef</span>(<span class="st">&quot;habitat-space&quot;</span>)))</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>back <span class="op">=</span> <span class="fu">first</span>(<span class="fu">from_wiring_diagram</span>(<span class="fu">to_wiring_diagram</span>(annotated)))</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>(reference <span class="op">=</span> <span class="fu">space_ref</span>(back, <span class="op">:</span>Habitat), round_trip <span class="op">=</span> <span class="fu">is_isomorphic</span>(annotated, back))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(reference = NamedRef(&quot;habitat-space&quot;), round_trip = true)</code></pre>
+</div>
+</div>
+</section>
 <section id="unrolling-a-dynamic-network-is-gluing" class="level2">
 <h2 class="anchored" data-anchor-id="unrolling-a-dynamic-network-is-gluing">Unrolling a dynamic network is gluing</h2>
 <p>The same machinery explains what <code>unroll</code> does to a <code>DynamicBayesNet</code>. A dynamic template is an initial network and a transition network related by the lag naming convention; <code>initial_slice</code> is the initial network renamed to slice 0 and <code>transition_slice(dbn, t)</code> the transition template seen from slice <code>t</code>, with the lagged variables exogenous. Gluing the outputs of one slice to the inputs of the next is exactly what <code>unroll</code> produces, up to renumbering of parts.</p>
-<div id="42" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>dbn <span class="op">=</span> <span class="fu">vegetation_herbivore_dbn</span>()</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>A_0 <span class="op">=</span> <span class="fu">Open</span>(<span class="fu">initial_slice</span>(dbn); outputs <span class="op">=</span> [<span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0])</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>B_1 <span class="op">=</span> <span class="fu">Open</span>(<span class="fu">transition_slice</span>(dbn, <span class="fl">1</span>); inputs <span class="op">=</span> [<span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0],</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>           outputs <span class="op">=</span> [<span class="op">:</span>Vegetation_1, <span class="op">:</span>Herbivores_1])</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> <span class="fu">glue</span>(A_0, B_1;</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>         along <span class="op">=</span> [<span class="op">:</span>Vegetation_0 <span class="op">=&gt;</span> <span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0 <span class="op">=&gt;</span> <span class="op">:</span>Herbivores_0])</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="fu">canonicalize</span>(<span class="fu">apex</span>(G)) <span class="op">==</span> <span class="fu">canonicalize</span>(<span class="fu">unroll</span>(dbn, <span class="fl">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="50" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>dbn <span class="op">=</span> <span class="fu">vegetation_herbivore_dbn</span>()</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>A_0 <span class="op">=</span> <span class="fu">Open</span>(<span class="fu">initial_slice</span>(dbn); outputs <span class="op">=</span> [<span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0])</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>B_1 <span class="op">=</span> <span class="fu">Open</span>(<span class="fu">transition_slice</span>(dbn, <span class="fl">1</span>); inputs <span class="op">=</span> [<span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0],</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>           outputs <span class="op">=</span> [<span class="op">:</span>Vegetation_1, <span class="op">:</span>Herbivores_1])</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> <span class="fu">glue</span>(A_0, B_1;</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>         along <span class="op">=</span> [<span class="op">:</span>Vegetation_0 <span class="op">=&gt;</span> <span class="op">:</span>Vegetation_0, <span class="op">:</span>Herbivores_0 <span class="op">=&gt;</span> <span class="op">:</span>Herbivores_0])</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a><span class="fu">canonicalize</span>(<span class="fu">apex</span>(G)) <span class="op">==</span> <span class="fu">canonicalize</span>(<span class="fu">unroll</span>(dbn, <span class="fl">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="1">
 <pre><code>true</code></pre>
 </div>

@@ -1,0 +1,89 @@
+Title:           Finite Typed Open Networks and Their Stochastic Interpretation
+Subject:         
+Keywords:        
+Author:          Simon Frost
+Creator:         LaTeX via pandoc
+Producer:        LuaTeX-1.21.0
+CreationDate:    Tue Sep  8 08:56:57 2026 PDT
+ModDate:         Tue Sep  8 08:56:57 2026 PDT
+Custom Metadata: yes
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           45
+Encrypted:       no
+Page size:       595.276 x 841.89 pts (A4)
+Page rot:        0
+File size:       348747 bytes
+Optimized:       no
+PDF version:     1.7
+name                                 type              encoding         emb sub uni object ID
+------------------------------------ ----------------- ---------------- --- --- --- ---------
+KYIMMZ+STIXTwoText                   CID TrueType      Identity-H       yes yes yes     27  0
+BOEAAW+STIXTwoText-Bold              CID Type 0C       Identity-H       yes yes yes     29  0
+HUUQXE+JuliaMono-Bold                CID TrueType      Identity-H       yes yes yes     31  0
+CNXPZC+JuliaMono-Regular             CID TrueType      Identity-H       yes yes yes     32  0
+SYXIHT+STIXTwoText-Italic            CID TrueType      Identity-H       yes yes yes     33  0
+SZLLPA+JuliaMono-BoldItalic          CID TrueType      Identity-H       yes yes yes     58  0
+NGUVNJ+Helvetica                     TrueType          WinAnsi          yes yes yes    143  0
+[none]                               Type 3            Custom           yes no  yes    144  0
+HNVGPJ+Helvetica                     TrueType          WinAnsi          yes yes yes    145  0
+[none]                               Type 3            Custom           yes no  yes    146  0
+LWTOXR+Helvetica                     TrueType          WinAnsi          yes yes yes    254  0
+[none]                               Type 3            Custom           yes no  yes    255  0
+JRHENG+Helvetica                     TrueType          WinAnsi          yes yes yes    256  0
+[none]                               Type 3            Custom           yes no  yes    257  0
+
+Layout diagnostics
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Overfull \vbox (3.07228pt too high) detected at line 545
+Underfull \vbox (badness 10000) detected at line 545
+Underfull \vbox (badness 10000) detected at line 545
+Overfull \vbox (1.82228pt too high) detected at line 726
+Underfull \vbox (badness 10000) detected at line 726
+Underfull \vbox (badness 10000) detected at line 726
+Overfull \vbox (1.44048pt too high) detected at line 846
+Overfull \vbox (3.07228pt too high) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1152
+Underfull \vbox (badness 10000) detected at line 1152
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1587
+Underfull \vbox (badness 10000) detected at line 1587
+Underfull \vbox (badness 10000) detected at line 1753
+Underfull \vbox (badness 10000) detected at line 1753
+Overfull \vbox (2.82228pt too high) detected at line 1765
+Underfull \vbox (badness 10000) detected at line 1932
+Underfull \vbox (badness 10000) detected at line 1932
+Overfull \vbox (0.82228pt too high) detected at line 2100
+Underfull \vbox (badness 10000) detected at line 2100
+Underfull \vbox (badness 10000) detected at line 2100
+Underfull \vbox (badness 10000) detected at line 2248
+Overfull \vbox (1.59888pt too high) detected at line 2362
+Underfull \vbox (badness 10000) detected at line 2546
+Underfull \vbox (badness 10000) detected at line 2546
+Underfull \vbox (badness 10000) detected at line 2546
+Underfull \vbox (badness 10000) detected at line 2546
+Underfull \vbox (badness 10000) detected at line 2860
+Underfull \vbox (badness 10000) detected at line 2860
+Underfull \vbox (badness 10000) detected at line 2860
+Underfull \vbox (badness 10000) detected at line 2860
+Underfull \vbox (badness 10000) detected at line 2974
+Underfull \vbox (badness 10000) detected at line 2974
+Underfull \vbox (badness 10000) detected at line 3138
+Underfull \vbox (badness 10000) detected at line 3138

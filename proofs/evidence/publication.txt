@@ -1,0 +1,63 @@
+Title:           The Category of Finite Typed Open Networks
+Subject:         
+Keywords:        
+Author:          Simon Frost
+Creator:         LaTeX via pandoc
+Producer:        LuaTeX-1.21.0
+CreationDate:    Mon Sep  7 22:48:18 2026 PDT
+ModDate:         Mon Sep  7 22:48:18 2026 PDT
+Custom Metadata: yes
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           24
+Encrypted:       no
+Page size:       595.276 x 841.89 pts (A4)
+Page rot:        0
+File size:       264624 bytes
+Optimized:       no
+PDF version:     1.7
+name                                 type              encoding         emb sub uni object ID
+------------------------------------ ----------------- ---------------- --- --- --- ---------
+LEJVRI+STIXTwoText                   CID TrueType      Identity-H       yes yes yes     17  0
+MFKDZI+STIXTwoText-Bold              CID Type 0C       Identity-H       yes yes yes     19  0
+XBABLE+JuliaMono-Bold                CID TrueType      Identity-H       yes yes yes     21  0
+JWDMWS+JuliaMono-Regular             CID TrueType      Identity-H       yes yes yes     22  0
+AZNDDU+STIXTwoText-Italic            CID TrueType      Identity-H       yes yes yes     23  0
+ZKALDV+JuliaMono-BoldItalic          CID TrueType      Identity-H       yes yes yes     38  0
+NGUVNJ+Helvetica                     TrueType          WinAnsi          yes yes yes    123  0
+[none]                               Type 3            Custom           yes no  yes    124  0
+HNVGPJ+Helvetica                     TrueType          WinAnsi          yes yes yes    125  0
+[none]                               Type 3            Custom           yes no  yes    126  0
+
+Layout warnings
+Overfull \vbox (1.95128pt too high) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Underfull \vbox (badness 10000) detected at line 388
+Overfull \vbox (3.07228pt too high) detected at line 545
+Underfull \vbox (badness 10000) detected at line 545
+Underfull \vbox (badness 10000) detected at line 545
+Underfull \vbox (badness 10000) detected at line 726
+Underfull \vbox (badness 10000) detected at line 726
+Overfull \vbox (3.07228pt too high) detected at line 846
+Underfull \vbox (badness 10000) detected at line 846
+Underfull \vbox (badness 10000) detected at line 846
+Overfull \vbox (3.07228pt too high) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1044
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Underfull \vbox (badness 10000) detected at line 1443
+Overfull \vbox (2.69048pt too high) detected at line 1587
+Underfull \vbox (badness 10000) detected at line 1753
+Underfull \vbox (badness 10000) detected at line 1753

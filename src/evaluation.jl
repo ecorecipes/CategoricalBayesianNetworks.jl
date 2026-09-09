@@ -143,7 +143,7 @@ function interpret(o::OpenBayesNetCospan, lookup; max_states::Integer=DEFAULT_MA
         p == 0 && continue
         T[ntuple(j -> ci[sel[j]], length(sel))...] += p
     end
-    return FiniteKernel(X, Y, T; atol=_joint_atol(atol, length(ids)))
+    return FiniteKernel(X, Y, T; atol=_joint_atol(atol, length(factors)))
 end
 
 interpret(o::OpenBayesNetCospan, m::BayesModel; kw...) = interpret(o, m.kernels; kw...)

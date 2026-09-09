@@ -1,0 +1,12 @@
+HTML: 18 Lean code blocks; local assets present: ['diagrams/mixed.svg', 'style.css']
+PDF: 24 pages; final hidden_scalar_associativity and full apex_pushout present in extracted text.
+Visual inspection: viewed the title/contents page, dense proof page 4, complete pushout
+page 21, example diagram page 22, final theorem page 24, and the standalone diagram PNG.
+No clipped code or footer overlap was observed on these inspected pages.
+The diagram visibly has two input slots, a pass-through output, two copied outputs,
+and an independent hidden nullary mechanism. Its corresponding claims compile in Lean.
+All PDF fonts are embedded. Body STIX Two Text, code JuliaMono, diagram Helvetica.
+Final LaTeX log: zero missing characters, zero overfull horizontal boxes, zero unresolved
+LaTeX warnings; five small overfull vertical boxes (maximum 3.07228pt), 22 underfull
+vertical boxes remain at long-code pagination. Not every PDF page was visually inspected.
+HTML was structurally checked, not rendered in a browser.
