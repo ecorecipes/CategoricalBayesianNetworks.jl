@@ -115,6 +115,9 @@ twice is copied, as in the wiring. `kernels` is a dictionary keyed by
 `kernel_ref` is an attribute of the apex) or by target variable name; a
 `BayesModel` supplies its `kernels`. Every mechanism must resolve
 (`MissingKernelError`) and fit (`KernelBindingError`).
+For raw apexes with colliding variable or mechanism names, use distinct `KernelRef`
+keys to distinguish distinct generators. Evaluation indexes apex variables by part
+identity, so equal names do not identify latent variables or their kernels.
 
 Summing out the apex variables that are not outputs is categorical marginalisation, the
 operation [LorenzinZanasi2025](@cite) analyse as the categorical form of variable
