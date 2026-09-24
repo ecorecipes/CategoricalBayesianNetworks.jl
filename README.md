@@ -44,7 +44,13 @@ categorical side and `FiniteKernels.jl` → `BayesianNetworks.jl` →
   `BayesianNetworks.joint_distribution`), and `interpret` gives the kernel
   `⊗ inputs → ⊗ outputs` of an open network with
   `interpret(compose(A, B)) ≈ compose(interpret(A), interpret(B))` and likewise for `otimes`
-  (Propositions 2 and 3).
+  (Propositions 2 and 3). Combine the kernel dictionaries of separately built operands with
+  `merge_kernels`, not `merge`: `bind_kernel` derives a mechanism's default reference from
+  its *name*, so two independently built networks that name a mechanism alike share a
+  `KernelRef`, and a plain `merge` silently drops one of the two kernels. `merge_kernels`
+  raises `ConflictingKernelError` instead. `interpret` cannot catch this itself -- once it
+  holds a single dictionary the losing kernel is gone, and a genuine duplicate such as
+  `A ⊗ A` is indistinguishable from the collision.
 - **Drawings** (`src/graphics.jl`): `to_graphviz` on an open network (interface variables
   drawn with a dashed or bold border) and on a wiring diagram (Catlab's renderer, with the
   mechanism and variable names as labels).

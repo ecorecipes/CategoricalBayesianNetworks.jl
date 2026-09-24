@@ -102,7 +102,8 @@ export export_open_certificate, export_open_operation_certificate, OpenCertifica
 export VariablePort, MechanismBox, BayesWiringDiagram, from_wiring_diagram,
        wiring_expression
 # evaluation.jl
-export to_free_expression, free_generators, categorical_joint, interpret
+export to_free_expression, free_generators, categorical_joint, interpret,
+    merge_kernels, ConflictingKernelError
 
 include("open.jl")
 include("composition.jl")

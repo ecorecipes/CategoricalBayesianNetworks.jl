@@ -26,3 +26,8 @@ path = "../../BayesianNetworks.jl/proofs"
 [[lean_exe]]
 name = "check_certificate"
 root = "CertificateMain"
+
+[[lean_lib]]
+name = "Shadows"
+srcDir = "."
+globs = ["CategoricalBayesianNetworksProofs.Shadows.*"]

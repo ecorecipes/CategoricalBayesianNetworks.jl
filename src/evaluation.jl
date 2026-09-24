@@ -103,6 +103,54 @@ end
 ######################################
 
 """
+    ConflictingKernelError(ref, first, second)
+
+Two models bind different kernels to the same [`KernelRef`](@ref), so they cannot be
+combined into one kernel dictionary. See [`merge_kernels`](@ref).
+"""
+struct ConflictingKernelError <: BayesianNetworks.BayesNetError
+    ref::KernelRef
+    first::FiniteKernel
+    second::FiniteKernel
+end
+
+function Base.showerror(io::IO, e::ConflictingKernelError)
+    return print(io,
+                 "ConflictingKernelError: two models bind different kernels to ", e.ref,
+                 ". `bind_kernel` derives a mechanism's default reference from its name, so ",
+                 "independently built networks that name a mechanism alike collide. Give the ",
+                 "mechanisms distinct names before binding their kernels, or set their kernel_ref ",
+                 "explicitly. (`rename_variable` does not rewrite an already-bound reference.)")
+end
+
+"""
+    merge_kernels(models...) -> Dict{KernelRef,FiniteKernel}
+    merge_kernels(dicts...)  -> Dict{KernelRef,FiniteKernel}
+
+The combined kernel dictionary of several models, for interpreting a network composed from
+them. Unlike `merge`, this raises [`ConflictingKernelError`](@ref) when two operands bind
+*different* kernels to the same reference instead of silently keeping the last.
+
+That collision is easy to produce by accident: composition deliberately keeps the mechanisms
+of both operands as distinct apex parts (ADR 0011), while `bind_kernel` derives a
+mechanism's default reference from its *name*, so two independently built networks that name
+a mechanism alike share a reference. `interpret` cannot detect this -- by the time it sees
+one dictionary, the losing kernel is gone, and a genuine duplicate such as `A ⊗ A` looks
+exactly the same -- so combine kernels with this function rather than with `merge`.
+"""
+function merge_kernels(ds::AbstractDict{<:KernelRef}...)
+    out = Dict{KernelRef,FiniteKernel}()
+    for d in ds, (ref, k) in d
+        prev = get(out, ref, nothing)
+        prev === nothing || prev == k || throw(ConflictingKernelError(ref, prev, k))
+        out[ref] = k
+    end
+    return out
+end
+
+merge_kernels(ms::BayesModel...) = merge_kernels(map(kernels, ms)...)
+
+"""
     interpret(o::OpenBayesNet, kernels; max_states = 1_000_000, atol = DEFAULT_ATOL) -> FiniteKernel
     interpret(o::OpenBayesNet, m::BayesModel; kwargs...)
 

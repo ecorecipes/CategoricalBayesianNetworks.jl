@@ -25,7 +25,7 @@ using Random
                          [:X => [0.3, 0.7], :Y => [0.9 0.1; 0.2 0.8]])
         e = to_free_expression(chain)
         @test string(e) == "compose(X_mechanism,mcopy(X),otimes(id(X),Y_mechanism))"
-        @test categorical_joint(chain).table ≈ [0.3 * 0.9 0.3 * 0.1; 0.7 * 0.2 0.7 * 0.8]
+        @test categorical_joint(chain).table ≈ [0.3*0.9 0.3*0.1; 0.7*0.2 0.7*0.8]
         fork = bind_cpt(BayesModel(bayesnet(:X => [:a, :b], :Y => [:c, :d], :Z => [:e, :f];
                                             mechanisms=[:Y => :X, :Z => :X])),
                         [:X => [0.3, 0.7], :Y => [0.9 0.1; 0.2 0.8],
@@ -128,4 +128,41 @@ using Random
         @test_throws UnnormalizedKernelError interpret(O, rough)
         @test interpret(O, rough; atol=1e-6).table ≈ marginal(rough, :Y; atol=1e-6).table
     end
+end
+
+@testset "merge_kernels catches a kernel reference collision" begin
+    # `bind_kernel` derives a mechanism's default reference from its *name*, so two
+    # independently built networks that name a mechanism alike collide. `otimes` correctly
+    # keeps both as distinct apex parts (ADR 0011), but a plain `merge` of their kernel
+    # dictionaries drops one kernel, and `interpret` then returned a normalised, wrong
+    # kernel for both parts. `interpret` cannot detect this after the fact -- a genuine
+    # duplicate such as `A ⊗ A` presents identically -- so the check belongs in the merge.
+    st(n, p) = [Symbol(p * string(i)) for i in 1:n]
+    function piece(tab, h)
+        bn = bayesnet(:Q => st(3, "q"), h => st(5, "h");
+                      mechanisms=[h => (:Q,)], closed=false)
+        m = bind_cpt(BayesModel(bn), h => tab)
+        return m, Open(syntax(m); inputs=[:Q], outputs=[h])
+    end
+    nrm(t) = t ./ sum(t; dims=2)
+    tA = nrm([0.1 0.2 0.3 0.2 0.2; 0.3 0.1 0.1 0.4 0.1; 0.2 0.2 0.2 0.2 0.2])
+    tB = nrm([0.4 0.1 0.1 0.2 0.2; 0.1 0.5 0.1 0.2 0.1; 0.3 0.3 0.1 0.2 0.1])
+
+    mA, A = piece(tA, :H)
+    mB, B = piece(tB, :H)
+    @test_throws ConflictingKernelError merge_kernels(mA, mB)
+    @test_throws ConflictingKernelError merge_kernels(kernels(mA), kernels(mB))
+    # The silent-loss path that motivated the check.
+    @test !(interpret(otimes(A, B), merge(kernels(mA), kernels(mB))) ≈
+            tensor_kernel(interpret(A, mA), interpret(B, mB)))
+
+    # Distinct names carry distinct references; the merge is then clean and Proposition 3
+    # holds exactly.
+    mA2, A2 = piece(tA, :H)
+    mB2, B2 = piece(tB, :H2)
+    kT = interpret(otimes(A2, B2), merge_kernels(mA2, mB2))
+    @test kT ≈ tensor_kernel(interpret(A2, mA2), interpret(B2, mB2))
+
+    # A genuine duplicate shares a reference with itself and must still merge.
+    @test merge_kernels(mA2, mA2) == kernels(mA2)
 end
