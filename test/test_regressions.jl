@@ -40,8 +40,8 @@ end
     @test ins == [:X] && outs == [:X, :X]
     mismatch = BayesWiringDiagram([p], [VariablePort(:X, [:no, :yes], NamedRef("other"))])
     add_wire!(mismatch,
-              Port(input_id(mismatch), OutputPort, 1) =>
-                  Port(output_id(mismatch), InputPort, 1))
+              Port(input_id(mismatch), OutputPort, 1) => Port(output_id(mismatch),
+                                                              InputPort, 1))
     @test_throws WiringDiagramError from_wiring_diagram(mismatch)
     @test_throws WiringDiagramError wiring_expression(mismatch)
 end

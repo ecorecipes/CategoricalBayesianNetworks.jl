@@ -61,5 +61,5 @@ makedocs(;
          plugins=[bib])
 
 "--no-deploy" in ARGS || deploydocs(;
-           repo="github.com/ecorecipes/CategoricalBayesianNetworks.jl.git",
-           devbranch="main")
+                                    repo="github.com/ecorecipes/CategoricalBayesianNetworks.jl.git",
+                                    devbranch="main")

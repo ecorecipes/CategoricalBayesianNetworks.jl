@@ -193,7 +193,7 @@
         @test inputs(R2) == [:GrazingPressure]
         @test outputs(R2) == [:Occupancy]
         @test canonicalize(apex(R2)) ==
-              canonicalize(glue(A, B2; along=[:SoilMoisture => :SoilMoisture]) |> apex)
+              canonicalize(apex(glue(A, B2; along=[:SoilMoisture => :SoilMoisture])))
         # Two mechanism-bearing variables at one junction.
         Bc = Open(biotic_bn(); inputs=Symbol[], outputs=[:SoilMoisture, :Occupancy],
                   validate=false)

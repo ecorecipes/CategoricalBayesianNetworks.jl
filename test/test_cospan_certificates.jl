@@ -26,8 +26,10 @@
 
     function relation(o)
         bn = apex(o)
-        attr(v) = (variable_name=variable_name(bn, v), space_ref=space_ref(bn, v),
-                   states=states(bn, v))
+        function attr(v)
+            return (variable_name=variable_name(bn, v), space_ref=space_ref(bn, v),
+                    states=states(bn, v))
+        end
         return [(label=(mechanism_name=mechanism_name(bn, m), kernel_ref=kernel_ref(bn, m)),
                  inputs=[attr(v) for v in inputs(bn, m)], output=attr(target(bn, m)))
                 for m in mechanisms(bn)]
@@ -78,7 +80,8 @@
         @test export_open_certificate(o;
                                       signature=CBN.JSON3.read(json(finite.signature.entries))).signature ==
               finite.signature
-        @test length(export_open_certificate(o; signature=vcat(entries, entries)).signature.entries) ==
+        @test length(export_open_certificate(o;
+                                             signature=vcat(entries, entries)).signature.entries) ==
               4
         @test_throws OpenCertificateError export_open_certificate(o; signature=entries[1:1])
         @test_throws OpenCertificateError export_open_certificate(o; signature=[])
@@ -156,12 +159,15 @@
         empty_data = export_open_certificate(empty)
         @test all(isempty, values(empty_data.networks.C.apex))
         @test isempty(empty_data.networks.C.input.Variable)
-        @test isempty(export_open_operation_certificate(:compose_structural, empty, empty).cocone.B.State)
-        @test isempty(export_open_operation_certificate(:otimes, empty, empty).networks.C.apex.Input)
+        @test isempty(export_open_operation_certificate(:compose_structural, empty,
+                                                        empty).cocone.B.State)
+        @test isempty(export_open_operation_certificate(:otimes, empty,
+                                                        empty).networks.C.apex.Input)
         @test export_open_certificate(o; description="explicit",
                                       producer_version="custom").metadata.description ==
               "explicit"
-        @test export_open_certificate(o; comparison_manifest_sha256=repeat("a", 64)).metadata.comparison_authority.manifest_sha256 ==
+        @test export_open_certificate(o;
+                                      comparison_manifest_sha256=repeat("a", 64)).metadata.comparison_authority.manifest_sha256 ==
               repeat("a", 64)
         names = [Symbol("\u00e9"), Symbol("e\u0301")]
         text = Open(bayesnet(names[1] => [:a], names[2] => [:b]); outputs=names)

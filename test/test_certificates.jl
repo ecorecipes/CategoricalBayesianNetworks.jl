@@ -24,16 +24,20 @@ end
 
 function certificate_profile(c)
     ref(r) = BayesianNetworks.JSON3.write(r)
-    attrs(v) = (v.name, ref(v.spaceRef),
+    function attrs(v)
+        return (v.name, ref(v.spaceRef),
                 Tuple(r.name for r in sort(collect(v.stateRows); by=r -> r.position)))
+    end
     variable(id) = attrs(c.variableData[id + 1])
     mechanisms = [(m.name, ref(m.kernelRef), variable(m.target),
                    Tuple(variable(r.varId)
                          for r in
                              sort(collect(m.inputRows); by=r -> r.position)))
                   for m in c.mechanisms]
-    boundary(rows) = [(variable(r.varId), r.attrs.name, ref(r.attrs.spaceRef),
-                       Tuple(r.attrs.states)) for r in rows]
+    function boundary(rows)
+        return [(variable(r.varId), r.attrs.name, ref(r.attrs.spaceRef),
+                 Tuple(r.attrs.states)) for r in rows]
+    end
     return (sort(attrs.(c.variableData); by=repr), sort(mechanisms; by=repr),
             boundary(c.inputs), boundary(c.outputs))
 end

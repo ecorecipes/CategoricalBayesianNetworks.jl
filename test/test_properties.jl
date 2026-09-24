@@ -55,13 +55,13 @@ end
             ok || continue
             refs = Dict(x => kernel_ref(bn, mechanism_of(bn, x)) for x in order)
             A = Open(bayesnet([x => states(bn, x) for x in headn]...;
-                              mechanisms=[x =>
-                                              Tuple(variable_name.(Ref(bn), parents(bn, x)))
+                              mechanisms=[x => Tuple(variable_name.(Ref(bn),
+                                                                    parents(bn, x)))
                                           for x in headn],
                               kernel_refs=refs); outputs=[c])
             B = Open(bayesnet([x => states(bn, x) for x in vcat([c], tailn)]...;
-                              mechanisms=[x =>
-                                              Tuple(variable_name.(Ref(bn), parents(bn, x)))
+                              mechanisms=[x => Tuple(variable_name.(Ref(bn),
+                                                                    parents(bn, x)))
                                           for x in tailn], closed=false, kernel_refs=refs);
                      inputs=[c], outputs=[last(tailn)])
             kA, kB = interpret(A, m), interpret(B, m)

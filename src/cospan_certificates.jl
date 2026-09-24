@@ -11,8 +11,8 @@ function _open_cert_text(value, path; name=nothing, limit=128)
         _open_cert_fail(:text, path, "expected a string or Symbol"; name)
     text = String(value)
     isvalid(text) && 1 <= length(text) <= limit &&
-    all(c -> !(UInt32(c) <= 0x1f || 0x7f <= UInt32(c) <= 0x9f ||
-               0xd800 <= UInt32(c) <= 0xdfff), text) ||
+        all(c -> !(UInt32(c) <= 0x1f || 0x7f <= UInt32(c) <= 0x9f ||
+                   0xd800 <= UInt32(c) <= 0xdfff), text) ||
         _open_cert_fail(:text, path,
                         "expected 1:$limit Unicode scalar values without C0/C1 controls, DEL or surrogates";
                         name)
@@ -198,9 +198,11 @@ end
 function _open_cert_check_signature(o, signature, path)
     signature.kind == "unrestricted" && return nothing
     bn = apex(o)
-    attribute(v) = (variable_name=String(variable_name(bn, v)),
-                    space_ref=StructTypes.lower(space_ref(bn, v)),
-                    states=String.(states(bn, v)))
+    function attribute(v)
+        return (variable_name=String(variable_name(bn, v)),
+                space_ref=StructTypes.lower(space_ref(bn, v)),
+                states=String.(states(bn, v)))
+    end
     for m in mechanisms(bn)
         label = (mechanism_name=String(mechanism_name(bn, m)),
                  kernel_ref=StructTypes.lower(kernel_ref(bn, m)))
