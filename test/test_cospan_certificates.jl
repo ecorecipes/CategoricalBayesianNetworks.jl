@@ -193,8 +193,10 @@
             @test_throws OpenCertificateError export_open_certificate(o;
                                                                       comparison_manifest_sha256=digest)
         end
+        # `validate` now rejects a variable with no states, so this is caught earlier and
+        # more generally than by the certificate's own check.
         no_states = CBN._open(bayesnet(:X => Symbol[]), Int[], Int[])
-        @test_throws OpenCertificateError export_open_certificate(no_states)
+        @test_throws EmptyStateSpaceError export_open_certificate(no_states)
         labels = [Symbol("s", i) for i in 1:256]
         largest = Open(bayesnet(:X => labels); outputs=[:X])
         @test length(export_open_certificate(largest).networks.C.apex.State) == 256

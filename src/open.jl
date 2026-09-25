@@ -151,7 +151,8 @@ end
 
 function _two_feet(o::StructuredMulticospan{_OpenL})
     return length(feet(o)) == 2 ||
-           throw(ArgumentError("expected an open network with two feet (inputs and outputs), got $(length(feet(o))) legs"))
+           throw(InterfaceMismatchError(:length, 0, 2, length(feet(o)),
+                                        "an open network must have two feet (inputs and outputs)"))
 end
 
 """
