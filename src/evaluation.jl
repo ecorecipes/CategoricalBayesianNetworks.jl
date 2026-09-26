@@ -105,7 +105,7 @@ end
 """
     ConflictingKernelError(ref, first, second)
 
-Two models bind different kernels to the same [`KernelRef`](@ref), so they cannot be
+Two models bind different kernels to the same `BayesianNetworks.KernelRef`, so they cannot be
 combined into one kernel dictionary. See [`merge_kernels`](@ref).
 """
 struct ConflictingKernelError <: BayesianNetworks.BayesNetError
