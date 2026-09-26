@@ -160,8 +160,9 @@ headlines and rejects source escape hatches and axioms outside `propext`,
 
 ## Style
 
-JuliaFormatter `yas`; docstrings on every exported name; typed exceptions with variable names in the message;
-no emojis in code or docs.
+JuliaFormatter `yas`; docstrings on every exported name, which `test/test_docstrings.jl` enforces; the docs
+build is strict (no `warnonly`), so a docstring left out of the manual or a broken `@ref` fails it; typed
+exceptions with variable names in the message; no emojis in code or docs.
 
 Exceptions thrown here are `BayesianNetworks`' (`InterfaceError`, `InterfaceMismatchError`,
 `NameClashError`, `WiringDiagramError`, ...). The whole `BayesNetError` hierarchy stays in
