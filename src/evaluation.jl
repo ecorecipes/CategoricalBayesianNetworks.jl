@@ -103,27 +103,6 @@ end
 ######################################
 
 """
-    ConflictingKernelError(ref, first, second)
-
-Two models bind different kernels to the same `BayesianNetworks.KernelRef`, so they cannot be
-combined into one kernel dictionary. See [`merge_kernels`](@ref).
-"""
-struct ConflictingKernelError <: BayesianNetworks.BayesNetError
-    ref::KernelRef
-    first::FiniteKernel
-    second::FiniteKernel
-end
-
-function Base.showerror(io::IO, e::ConflictingKernelError)
-    return print(io,
-                 "ConflictingKernelError: two models bind different kernels to ", e.ref,
-                 ". `bind_kernel` derives a mechanism's default reference from its name, so ",
-                 "independently built networks that name a mechanism alike collide. Give the ",
-                 "mechanisms distinct names before binding their kernels, or set their kernel_ref ",
-                 "explicitly. (`rename_variable` does not rewrite an already-bound reference.)")
-end
-
-"""
     merge_kernels(models...) -> Dict{KernelRef,FiniteKernel}
     merge_kernels(dicts...)  -> Dict{KernelRef,FiniteKernel}
 

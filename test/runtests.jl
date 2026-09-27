@@ -16,5 +16,6 @@ using CategoricalBayesianNetworks
     include("test_regressions.jl")
     include("test_certificates.jl")
     include("test_cospan_certificates.jl")
+    include("test_errors.jl")
     include("test_docstrings.jl")
 end

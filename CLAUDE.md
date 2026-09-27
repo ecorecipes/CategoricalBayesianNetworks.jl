@@ -55,6 +55,8 @@ cd proofs && lake build --wfail && make audit && make docs        # exact syntax
   and its existing `JSON3` / `StructTypes` serialization integrations). Those are
   not `BayesianNetworks`' public interface; this package is their only consumer, and a
   change on either side has to be made on both.
+- `src/errors.jl`: `ConflictingKernelError`, the one exception this package introduces (under
+  `BayesNetError`, ADR 0013); included first.
 - `src/open.jl`: `OpenBayesNet` / `OpenBayesNetOb` from `OpenACSetTypes(BayesNetUntyped,
   VariableSpaceUntyped)`, `Open(bn; inputs, outputs)`, accessors, the typed-interface rule
   (`validate(::OpenBayesNet)`, `InterfaceError`), and the `munit` override.
@@ -167,11 +169,12 @@ the nearest root (`FiniteKernelsError`, `BayesianNetworkFormatsError` or `BayesN
 and keywords raise `ArgumentError`, typed errors from a lower package pass through unchanged and documented,
 and another package's type is named as a code span, never with `@ref`; no emojis in code or docs.
 
-Exceptions thrown here are `BayesianNetworks`' (`InterfaceError`, `InterfaceMismatchError`,
-`NameClashError`, `WiringDiagramError`, ...). The whole `BayesNetError` hierarchy stays in
-`BayesianNetworks/src/errors.jl` even where only this package throws a given type: they are
-plain structs sharing one root, and splitting the hierarchy across two packages would be
-worse than importing them.
+Most exceptions thrown here are `BayesianNetworks`' (`InterfaceError`, `InterfaceMismatchError`,
+`NameClashError`, `WiringDiagramError`, ...) and pass through unchanged. A type this package introduces
+lives in its own `src/errors.jl`, in this module, under `BayesNetError` (ADR 0013), as InfluenceDiagrams
+and BayesianNetworkInference do: today that is `ConflictingKernelError`. MarkovCategories'
+`UnboundGeneratorError` (from `evaluate`) and `FiniteKernelsError` are re-exported, and
+`test/test_errors.jl` checks that every MarkovCategories exception type is.
 
 ## How Catlab is used
 

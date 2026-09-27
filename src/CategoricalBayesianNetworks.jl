@@ -87,6 +87,8 @@ export WiringDiagram, Box, Port, Wire, InputPort, OutputPort, add_box!, add_wire
 # Re-exported MarkovCategories names for the free expressions of `src/evaluation.jl`.
 export evaluate, FreeMarkovCategory, ThMarkovCategory, mcopy, delete, braid, Δ, ◊, σ,
        Ob, Hom
+# MarkovCategories' error from `evaluate`, and its root (ADR 0013).
+export UnboundGeneratorError, FiniteKernelsError
 
 # open.jl
 export OpenBayesNetObUntyped, OpenBayesNetUntyped, OpenBayesNetOb, OpenBayesNet, Open,
@@ -105,6 +107,7 @@ export VariablePort, MechanismBox, BayesWiringDiagram, from_wiring_diagram,
 export to_free_expression, free_generators, categorical_joint, interpret,
        merge_kernels, ConflictingKernelError
 
+include("errors.jl")
 include("open.jl")
 include("composition.jl")
 include("certificates.jl")
