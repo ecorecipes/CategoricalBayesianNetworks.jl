@@ -159,7 +159,7 @@ function interpret(o::OpenBayesNetCospan, lookup; max_states::Integer=DEFAULT_MA
     bn = apex(o)
     in_ids, out_ids = input_variables(o), output_variables(o)
     ids = variables(bn)
-    n = prod(Int128[nstates(bn, v) for v in ids]; init=Int128(1))
+    n = prod(BigInt[nstates(bn, v) for v in ids]; init=big(1))
     n <= max_states || throw(ModelTooLargeError(Int(min(n, typemax(Int))), max_states))
     pos = Dict{Int,Int}(v => i for (i, v) in enumerate(ids))
     dims = Tuple(nstates(bn, v) for v in ids)

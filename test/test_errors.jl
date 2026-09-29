@@ -23,3 +23,15 @@ end
     end
     @test UnboundGeneratorError <: FiniteKernelsError
 end
+
+@testset "interpret's state count does not overflow" begin
+    # An Int128 product wraps past 2^127, so a 2^200-state apex used to pass max_states.
+    let v = [Symbol("X", i) for i in 1:200]
+        bn = bayesnet([x => [:a, :b] for x in v]...; mechanisms=[x => () for x in v])
+        m = BayesModel(bn)
+        for x in v
+            m = bind_cpt(m, x => [0.5, 0.5])
+        end
+        @test_throws ModelTooLargeError interpret(Open(syntax(m); outputs=[:X1]), m)
+    end
+end
