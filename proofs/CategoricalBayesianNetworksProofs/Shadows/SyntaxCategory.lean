@@ -42,4 +42,13 @@ theorem backward : Shadow1 → Shadow2 → Candidate := by
   intro h1 h2 S X Y Z W f g h
   exact ⟨(h1 S X Y f).1, (h1 S X Y f).2, h2 S X Y Z W f g h⟩
 
+/-- SA-Pass anchor: the cited theorem proves `Candidate` as stated, so a restatement that
+drifts from the proved theorem stops compiling. Here the cited theorem is the
+`OpenNet.category` instance, whose identity is `ofNet (Net.identity _)` and whose composition
+is `compose`. -/
+theorem anchor : Candidate := fun S _ _ _ _ f g h =>
+  ⟨CategoryTheory.Category.id_comp (obj := Interface S) f,
+   CategoryTheory.Category.comp_id (obj := Interface S) f,
+   CategoryTheory.Category.assoc (obj := Interface S) f g h⟩
+
 end CategoricalBayesianNetworksProofs.Shadows.SyntaxCategory

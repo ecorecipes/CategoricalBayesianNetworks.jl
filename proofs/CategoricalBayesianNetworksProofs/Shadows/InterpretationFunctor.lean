@@ -59,4 +59,9 @@ theorem backward : Shadow1 → Shadow2 → Candidate := by
   rw [h1 S I X Y Z f g x z]
   rfl
 
+/-- SA-Pass anchor: the cited theorem proves `Candidate` as stated, so a restatement that
+drifts from the proved theorem stops compiling. -/
+theorem anchor : Candidate := fun _ I =>
+  ⟨fun _ _ _ f g => I.kernel_comp f g, fun X => I.map_copy X, fun X => I.map_discard X⟩
+
 end CategoricalBayesianNetworksProofs.Shadows.InterpretationFunctor

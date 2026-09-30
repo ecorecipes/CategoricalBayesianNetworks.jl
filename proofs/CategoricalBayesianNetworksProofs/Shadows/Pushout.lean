@@ -54,4 +54,9 @@ theorem backward : Shadow1 → Shadow2 → Candidate := by
   exact h2 S X Y Z f g T m' m (fun x => (hm'.1 x).trans (hml x).symm)
     (fun y => (hm'.2 y).trans (hmr y).symm)
 
+/-- SA-Pass anchor: the cited theorem proves `Candidate` as stated, so a restatement that
+drifts from the proved theorem stops compiling. -/
+theorem anchor : Candidate := fun _ _ _ _ f g _ u v h =>
+  OpenNet.Net.variable_pushout f g u v h
+
 end CategoricalBayesianNetworksProofs.Shadows.Pushout
