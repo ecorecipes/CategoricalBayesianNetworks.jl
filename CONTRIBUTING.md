@@ -58,3 +58,8 @@ copy, never the copy in this repository.
 
 Branch from `main`, keep PRs focused, and make sure CI is green (tests on Julia 1.12 and latest,
 vignette sync check, docs build).
+
+In the `bbn` development workspace, `scripts/precommit.sh` runs the ADR, reference and vignette
+sync checks of all eight packages in a few seconds, and `scripts/precommit.sh --docs` also builds
+every package's documentation strictly. Run the second before the last commit of a series. To run
+the sync checks on every commit, set `git config core.hooksPath <workspace>/scripts/hooks`.

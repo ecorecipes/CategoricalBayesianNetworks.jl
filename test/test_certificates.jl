@@ -1,5 +1,7 @@
 using BayesianNetworks: BayesianNetworks
 
+struct CertificateTestRef <: BayesianNetworks.KernelRef end
+
 function mixed_certificate_network()
     bn = BayesNet()
     x = add_variable!(bn, :x; states=Symbol.(["true", "false"]),
@@ -67,6 +69,18 @@ end
     @test certificate_profile(open_network_certificate(renumbered)) ==
           certificate_profile(c)
     @test open_network_certificate(renumbered).outputs[1].varId != c.outputs[1].varId
+
+    # A reference type the v1 profile has no tag for is content the certificate cannot
+    # represent (ADR 0015).
+    custom = deepcopy(o)
+    set_subpart!(apex(custom), 1, :kernel_ref, CertificateTestRef())
+    e = try
+        open_network_certificate(custom)
+    catch err
+        err
+    end
+    @test e isa OpenCertificateError && e.what === :unsupported_reference
+    @test e.path == "mechanisms.kernelRef" && e.name == mechanism_name(apex(custom), 1)
 
     empty = open_network_certificate(Open(BayesNet()))
     @test empty.variableCount == 0

@@ -1,9 +1,13 @@
-_certificate_ref(::NoRef) = (tag="noRef",)
-_certificate_ref(ref::NamedRef) = (tag="named", id=ref.id)
-_certificate_ref(ref::PointMassRef) = (tag="pointMass", state=String(ref.state))
-_certificate_ref(ref::PolicyRef) = (tag="policy", decision=String(ref.decision))
-function _certificate_ref(ref::KernelRef)
-    return throw(ArgumentError("OpenNet.RawCertificate/v1 does not support reference type $(typeof(ref))"))
+_certificate_ref(::NoRef, owner) = (tag="noRef",)
+_certificate_ref(ref::NamedRef, owner) = (tag="named", id=ref.id)
+_certificate_ref(ref::PointMassRef, owner) = (tag="pointMass", state=String(ref.state))
+_certificate_ref(ref::PolicyRef, owner) = (tag="policy", decision=String(ref.decision))
+# A reference type the v1 profile has no tag for (a user-defined `KernelRef` subtype) is
+# model content the certificate cannot represent (ADR 0015), so `OpenCertificateError`.
+function _certificate_ref(ref::KernelRef, owner)
+    path, name = owner
+    return throw(OpenCertificateError(:unsupported_reference, path, name,
+                                      "OpenNet.RawCertificate/v1 does not support reference type $(typeof(ref))"))
 end
 
 function _certificate_ranks(bn::AbstractBayesNet, ids::Vector{Int}, supplied)
@@ -36,7 +40,9 @@ end
 function _certificate_boundary(foot::AbstractVariableSpace, mapping::Vector{Int}, dense)
     return [(varId=dense[mapping[i]],
              attrs=(name=String(variable_name(foot, v)),
-                    spaceRef=_certificate_ref(subpart(foot, v, :space_ref)),
+                    spaceRef=_certificate_ref(subpart(foot, v, :space_ref),
+                                              ("boundary.spaceRef",
+                                               variable_name(foot, v))),
                     states=String.(states(foot, v))))
             for (i, v) in enumerate(parts(foot, :Variable))]
 end
@@ -59,7 +65,9 @@ By default, ranks are the zero-based positions in the apex's topological order.
 An explicit `ranks` dictionary must be keyed by source variable part ids, cover
 them exactly, contain nonnegative integers, and increase strictly along every
 input occurrence. Invalid rank arguments raise `ArgumentError` with the offending
-parts; structural errors use the normal [`validate`](@ref) exceptions.
+parts; structural errors use the normal [`validate`](@ref) exceptions. A space or
+kernel reference the v1 profile has no tag for (a user-defined `KernelRef` subtype)
+raises `OpenCertificateError` with `what = :unsupported_reference`.
 
 The result can be serialized by JSON3 or another JSON writer. Its format is
 specified in `proofs/EXPORTER-CONTRACT.md`. Exporting is not by itself a proof
@@ -73,13 +81,17 @@ function open_network_certificate(o::OpenBayesNetCospan; ranks=nothing)
     dense = Dict(v => i - 1 for (i, v) in enumerate(ids))
     rank = _certificate_ranks(bn, ids, ranks)
     variable_data = [(name=String(variable_name(bn, v)),
-                      spaceRef=_certificate_ref(subpart(bn, v, :space_ref)),
+                      spaceRef=_certificate_ref(subpart(bn, v, :space_ref),
+                                                ("variables.spaceRef",
+                                                 variable_name(bn, v))),
                       stateRows=[(name=String(subpart(bn, s, :state_name)),
                                   position=subpart(bn, s, :state_position))
                                  for s in incident(bn, v, :state_variable)],
                       rank=rank[v]) for v in ids]
     mechanism_data = [(name=String(mechanism_name(bn, m)),
-                       kernelRef=_certificate_ref(subpart(bn, m, :kernel_ref)),
+                       kernelRef=_certificate_ref(subpart(bn, m, :kernel_ref),
+                                                  ("mechanisms.kernelRef",
+                                                   mechanism_name(bn, m))),
                        target=dense[target(bn, m)],
                        inputRows=[(varId=dense[subpart(bn, i, :input_variable)],
                                    position=subpart(bn, i, :input_position))
