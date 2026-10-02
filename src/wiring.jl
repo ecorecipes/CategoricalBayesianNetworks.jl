@@ -34,9 +34,13 @@ end
 
 VariablePort(name::Symbol, states::Vector{Symbol}) = VariablePort(name, states, NoRef())
 
+# The port of variable `v` of a network. A port needs the variable's `space_ref`, so an
+# unset one, which is structurally valid, is a `MissingAttributeError`.
 function VariablePort(bn::AbstractVariableSpace, v)
-    return VariablePort(variable_name(bn, _variable_id(bn, v)),
-                        states(bn, v), subpart(bn, _variable_id(bn, v), :space_ref))
+    id = _variable_id(bn, v)
+    ref = subpart(bn, id, :space_ref)
+    _has_value(ref) || throw(MissingAttributeError(:Variable, id, :space_ref))
+    return VariablePort(variable_name(bn, id), states(bn, v), ref)
 end
 
 function Base.:(==)(a::VariablePort, b::VariablePort)
@@ -98,6 +102,9 @@ end
 function _wiring_diagram(bn::AbstractBayesNet, in_ids::AbstractVector{Int},
                          out_ids::AbstractVector{Int})
     _check_wiring_interface(bn, in_ids)
+    # Every variable has a port, which carries its `space_ref`, and every mechanism a box,
+    # which carries its `kernel_ref`: an unset one is reported before anything is built.
+    _require_attributes(bn; types=(:Ref,))
     d = BayesWiringDiagram([VariablePort(bn, v) for v in in_ids],
                            [VariablePort(bn, v) for v in out_ids])
     source = Dict{Int,Port}()
@@ -140,7 +147,9 @@ topological order; both are lists of names, and `outputs` may repeat a variable 
 name an input (a pass-through wire). The interface must satisfy the typed-interface
 rule (`InterfaceError`): inputs are distinct and have no mechanism, and every
 mechanism-free variable is an input. For an open network the interface is its feet. The
-network must be valid with unique names.
+network must be valid with unique names. Every port carries its variable's `space_ref`
+and every box its mechanism's `kernel_ref`, so an unset one, which is structurally
+valid, raises `MissingAttributeError` before any port or box is built.
 
 # Example
 

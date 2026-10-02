@@ -146,6 +146,39 @@ biotic_open() = Open(biotic_bn(); inputs=[:SoilMoisture], outputs=[:Occupancy])
         add_part!(broken, :Mechanism; mechanism_name=:orphan, kernel_ref=NoRef())
         o = Open(broken; outputs=[:Occupancy], validate=false)
         @test map(typeof, validation_errors(o)) == [DanglingReferenceError]
+        # A name or position without a value (an ACSet built part by part) is a
+        # `MissingAttributeError`, which stops the interface checks too: never a
+        # `MethodError`. This variable is exogenous and not an input, so rule 3 would read
+        # its missing name.
+        unnamed = biotic_bn()
+        v = add_part!(unnamed, :Variable; space_ref=NoRef())
+        @test_throws MissingAttributeError Open(unnamed; inputs=[:SoilMoisture],
+                                                outputs=[:Occupancy])
+        o = Open(unnamed; inputs=[:SoilMoisture], outputs=[:Occupancy], validate=false)
+        @test validation_errors(o) == [MissingAttributeError(:Variable, v, :variable_name)]
+        @test !isvalid(o)
+        @test_throws MissingAttributeError compose(abiotic_open(), o)
+        # The feet copy the names and positions of the interface variables and their
+        # states, so `Open` reports a missing one while building them, whatever `validate`.
+        unplaced = biotic_bn()
+        s = add_part!(unplaced, :State; state_variable=variable_id(unplaced, :SoilMoisture),
+                      state_name=:saturated)
+        for check in (true, false)
+            e = try
+                Open(unplaced; inputs=[:SoilMoisture], outputs=[:Occupancy], validate=check)
+            catch err
+                err
+            end
+            @test e == MissingAttributeError(:State, s, :state_position)
+        end
+        # A foot state without a position is not preserved by its leg: rule 5.
+        foot = VariableSpace()
+        add_variable!(foot, :SoilMoisture; states=[:low, :medium])
+        add_part!(foot, :State; state_variable=1, state_name=:high)
+        bad = OpenBayesNet(bn,
+                           OpenACSetLeg(foot; Variable=[variable_id(bn, :SoilMoisture)],
+                                        State=state_ids(bn, :SoilMoisture)), good)
+        @test validation_errors(bad) == [InterfaceError(5, [:SoilMoisture], [1])]
     end
 
     @testset "rename_variable" begin

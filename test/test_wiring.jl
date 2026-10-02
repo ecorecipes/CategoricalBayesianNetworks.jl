@@ -99,6 +99,30 @@ end
         @test_throws UnknownVariableError to_wiring_diagram(ref; outputs=[:Weather])
         @test_throws DuplicateNameError to_wiring_diagram(apex(otimes(abiotic_open(),
                                                                       abiotic_open())))
+        # A port carries its variable's `space_ref` and a box its mechanism's
+        # `kernel_ref`. An unset one is structurally valid, but here it is a
+        # `MissingAttributeError` before anything is built, never a `MethodError`.
+        unset = deepcopy(ref)
+        v, mv = variable_id(unset, :Vegetation), mechanism_of(unset, :Vegetation)
+        set_subpart!(unset, v, :space_ref, nothing)
+        set_subpart!(unset, mv, :kernel_ref, nothing)
+        e = try
+            to_wiring_diagram(unset)
+        catch err
+            err
+        end
+        @test e == MissingAttributeError(:Variable, v, :space_ref)
+        @test_throws MissingAttributeError VariablePort(unset, :Vegetation)
+        set_subpart!(unset, v, :space_ref, NoRef())
+        for f in (() -> to_wiring_diagram(unset),
+                  () -> to_wiring_diagram(Open(unset; outputs=[:Occupancy])))
+            e = try
+                f()
+            catch err
+                err
+            end
+            @test e == MissingAttributeError(:Mechanism, mv, :kernel_ref)
+        end
     end
 
     @testset "round trip" begin

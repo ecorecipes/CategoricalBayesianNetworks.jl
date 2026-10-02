@@ -73,9 +73,46 @@ munit(::Type{OpenBayesNetOb}) = OpenBayesNetOb(VariableSpace())
 # Feet and legs
 ###############
 
+# Whether an attribute has a value: one left out of `add_part!` reads as `nothing` or an
+# attribute variable, which is what check 0 of `BayesianNetworks.validation_errors` tests.
+_has_value(x) = !(x === nothing || x isa AttrVar)
+
+# A foot copies the names and positions of the apex variables `ids` and of their states,
+# and orders the states by position. An ACSet built part by part can leave one of them
+# without a value. That is the `MissingAttributeError` that `validate` reports, raised here
+# before the copy reads the value, so building a foot never fails with a `MethodError`.
+function _check_foot_attributes(bn::AbstractBayesNet, ids::AbstractVector{<:Integer})
+    for v in ids
+        _has_value(subpart(bn, v, :variable_name)) ||
+            throw(MissingAttributeError(:Variable, Int(v), :variable_name))
+        for s in incident(bn, v, :state_variable), attr in (:state_name, :state_position)
+            _has_value(subpart(bn, s, attr)) ||
+                throw(MissingAttributeError(:State, s, attr))
+        end
+    end
+    return nothing
+end
+
+# The first attribute of `acs` (an apex or a foot) whose type is one of `types` and that
+# has no value, as a `MissingAttributeError`. With the default types, this is check 0 of
+# `BayesianNetworks.validation_errors`: Catlab's colimits read every name and position,
+# so `glue` and `oapply`, which do not validate their operands, raise it before taking
+# one. With `types = (:Ref,)` it is the check of an operation that needs every reference,
+# such as building a wiring diagram.
+function _require_attributes(acs::ACSet; types=(:Label, :Position))
+    for (attr, ob, T) in attrs(acset_schema(acs))
+        T in types || continue
+        for p in parts(acs, ob)
+            _has_value(subpart(acs, p, attr)) || throw(MissingAttributeError(ob, p, attr))
+        end
+    end
+    return nothing
+end
+
 # The variable space on the apex variables `ids` (in that order, with their states in
 # position order) together with the apex part ids of each foot variable and state.
 function _foot(bn::AbstractBayesNet, ids::AbstractVector{<:Integer})
+    _check_foot_attributes(bn, ids)
     vs = VariableSpace()
     vmap, smap = Int[], Int[]
     for v in ids
@@ -118,6 +155,9 @@ an open network is a causal theory with free inputs [Fong2012](@cite).
 
 With `validate = true` the typed-interface rule is checked (see
 [`validate`](@ref validate(::CategoricalBayesianNetworks.OpenBayesNetCospan))) and the first violation thrown.
+Building the feet copies the names and positions of the interface variables and their
+states. If one has no value, which only an ACSet built part by part can have, the result
+is a `MissingAttributeError`, whatever `validate` says.
 
 # Example
 
@@ -241,7 +281,9 @@ function _leg_mismatches(leg, foot::VariableSpace, bn::AbstractBayesNet)
              variable_name(foot, v) == variable_name(bn, w) &&
              subpart(foot, v, :space_ref) == subpart(bn, w, :space_ref)
         if ok
-            fs = state_ids(foot, v)
+            # Unsorted: the comparison is state by state, and sorting would read a
+            # position the foot may lack (rule 5 then reports the variable).
+            fs = incident(foot, v, :state_variable)
             images = [S[s] for s in fs]
             ok = allunique(images) && length(images) == nstates(bn, w) &&
                  all(_in_range(bn, :State, t) && subpart(bn, t, :state_variable) == w &&
@@ -252,6 +294,26 @@ function _leg_mismatches(leg, foot::VariableSpace, bn::AbstractBayesNet)
         ok || push!(bad, v)
     end
     return bad
+end
+
+# Whether every attribute of `acs` has a value. Only a `Ref` can lack one in a valid
+# network: `BayesianNetworks` allows an unset reference, which only the semantics layer
+# needs bound.
+function _all_attributes_set(acs)
+    return all(_has_value(x)
+               for (attr, _, _) in attrs(acset_schema(acs)) for x in subpart(acs, attr))
+end
+
+# Naturality of a leg whose `_leg_mismatches` is empty. Catlab's `is_natural` applies the
+# attribute components to the foot's values, and fails on one without a value, so a foot
+# with an unset `Ref` is checked here instead. `_leg_mismatches` has then compared every
+# attribute of each foot variable and of its states (an unset `Ref` preserved as unset is
+# natural; one set on one side only is a mismatch) and the `state_variable` square of
+# those states. What remains is that every foot state belongs to a foot variable.
+function _leg_is_natural(leg, foot::VariableSpace)
+    _all_attributes_set(foot) && return is_natural(leg)
+    n = nparts(foot, :Variable)
+    return all(s -> 1 <= subpart(foot, s, :state_variable) <= n, parts(foot, :State))
 end
 
 # Rules 1 to 3 of the typed-interface rule for the variables `in_ids` of `bn` taken as
@@ -289,7 +351,7 @@ function _check_interface!(errs, o::OpenBayesNetCospan)
     natural = true
     for (leg, foot) in ((left(o), fin), (right(o), fout))
         bad = _leg_mismatches(leg, foot, bn)
-        if !isempty(bad) || !is_natural(leg)
+        if !isempty(bad) || !_leg_is_natural(leg, foot)
             isempty(bad) && (bad = collect(parts(foot, :Variable)))
             push!(errs, InterfaceError(5, variable_name.(Ref(foot), bad), bad))
             natural = false
@@ -312,10 +374,19 @@ typed-interface rules as `InterfaceError`s: rule 5 (legs natural and
 attribute-preserving), rule 2 (input leg injective), rule 1 (inputs have no mechanism)
 and rule 3 (every exogenous apex variable is an input). Rules 1 to 3 are only checked
 when rule 5 holds.
+
+The interface rules read the apex's references, names and positions, so they are
+skipped when the apex has a `DanglingReferenceError` or a `MissingAttributeError` (a name
+or position without a value, which only an ACSet built part by part can have). A foot
+state without a name or position is not preserved by its leg, which breaks rule 5.
+An unset space reference is structurally valid, as in `BayesianNetworks`. A leg
+preserves it when the foot's copy is unset too; a reference set on one side only
+breaks rule 5.
 """
 function validation_errors(o::OpenBayesNetCospan; unique_names::Bool=false)
     errs = validation_errors(apex(o); closed=false, unique_names=unique_names)
-    any(e -> e isa DanglingReferenceError, errs) && return errs
+    any(e -> e isa Union{DanglingReferenceError,MissingAttributeError}, errs) &&
+        return errs
     _check_interface!(errs, o)
     return errs
 end

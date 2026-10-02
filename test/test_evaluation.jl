@@ -104,6 +104,17 @@ using Random
         @test interpret(B, byname) ≈ kB
         @test_throws MissingKernelError interpret(B, Dict{KernelRef,FiniteKernel}())
         @test_throws MissingKernelError interpret(abiotic_open(), m)   # NoRef mechanisms
+        # An unset `kernel_ref` is structurally valid, but kernels keyed by reference need
+        # it: `BayesianNetworks`' lookup raises `MissingAttributeError`, not `MethodError`.
+        unset = deepcopy(B)
+        mu = mechanism_of(apex(unset), :Vegetation)
+        set_subpart!(apex(unset), mu, :kernel_ref, nothing)
+        e = try
+            interpret(unset, m)
+        catch err
+            err
+        end
+        @test e == MissingAttributeError(:Mechanism, mu, :kernel_ref)
         @test_throws KernelBindingError interpret(B,
                                                   Dict(x => kernel(m, :Climate)
                                                        for x in variable_names(apex(B))))

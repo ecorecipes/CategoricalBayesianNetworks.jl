@@ -92,6 +92,27 @@
         @test_throws OpenCertificateError export_open_certificate(o;
                                                                   signature=[merge(entries[1],
                                                                                    (valid=true,))])
+        # A tagged reference may give its `id`, `state` or `decision` as a Symbol, like any
+        # other name, and lowers to the same strings; a payload of another type is a
+        # profile failure, never an `ArgumentError`.
+        function tagged(ref)
+            ref isa NamedRef && return (type="NamedRef", id=Symbol(ref.id))
+            ref isa PointMassRef &&
+                return Dict("type" => "PointMassRef", "state" => ref.state)
+            ref isa PolicyRef && return (type="PolicyRef", decision=ref.decision)
+            return (type="NoRef",)
+        end
+        retag(a) = merge(a, (space_ref=tagged(a.space_ref),))
+        symbolic = [(label=(mechanism_name=e.label.mechanism_name,
+                            kernel_ref=tagged(e.label.kernel_ref)),
+                     inputs=map(retag, e.inputs), output=retag(e.output)) for e in entries]
+        @test export_open_certificate(o; signature=symbolic).signature == finite.signature
+        for payload in (3, nothing, [:kernel])
+            label = (mechanism_name=:F, kernel_ref=(type="NamedRef", id=payload))
+            @test_throws OpenCertificateError export_open_certificate(o;
+                                                                      signature=[merge(entries[1],
+                                                                                       (label=label,))])
+        end
 
         bn = bayesnet(:A => [:a, :b], :B => [:c, :d]; mechanisms=[:B => :A])
         for m in mechanisms(bn)
@@ -226,5 +247,32 @@
                                    Symbol("bad\nname"), "invalid")
         @test occursin("\\n", sprint(showerror, err))
         @test !occursin('\n', sprint(showerror, err))
+        # An unset reference is structurally valid, but the profile records the value of
+        # every reference; the path names the part and the attribute.
+        hidden = bayesnet(:A => [:a1, :a2], :B => [:b1, :b2]; mechanisms=[:B => :A])
+        v, m = variable_id(hidden, :B), mechanism_of(hidden, :B)
+        set_subpart!(hidden, v, :space_ref, nothing)
+        unset = Open(hidden; outputs=[:A])
+        for (f, network) in ((() -> export_open_certificate(unset), "C"),
+                             (() -> export_open_operation_certificate(:otimes, unset, unset),
+                              "A"))
+            e = try
+                f()
+            catch err
+                err
+            end
+            @test e isa OpenCertificateError && e.what === :unset_reference
+            @test e.path == "networks.$network.apex.Variable[$(v - 1)].space_ref"
+            @test e.name === :B
+        end
+        set_subpart!(hidden, v, :space_ref, NoRef())
+        set_subpart!(hidden, m, :kernel_ref, nothing)
+        e = try
+            export_open_certificate(Open(hidden; outputs=[:A]))
+        catch err
+            err
+        end
+        @test e isa OpenCertificateError && e.what === :unset_reference
+        @test e.path == "networks.C.apex.Mechanism[$(m - 1)].kernel_ref"
     end
 end

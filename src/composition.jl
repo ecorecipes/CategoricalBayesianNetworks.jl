@@ -46,6 +46,63 @@ function interface_matches(a::AbstractVariableSpace, b::AbstractVariableSpace)
     return _interface_difference(a, b) === nothing
 end
 
+# Unset references in colimits
+##############################
+
+# Catlab's colimits apply the identity of the attribute type `KernelRef` to every
+# reference, and fail on one that is not set (`nothing`). An unset reference is
+# structurally valid, because `BayesianNetworks` leaves binding to the semantics layer.
+# So a colimit over networks that have one runs on copies in which each unset reference
+# holds this placeholder, and the placeholders are cleared from all that it returns.
+# Placeholders are equal to each other, so an unset reference glued to an unset one stays
+# unset. The interface comparison before every colimit refuses one glued to a set
+# reference.
+struct _UnsetRef <: KernelRef end
+
+# The ACSets of a value: an open network's apex, feet and leg domains (its L-form legs
+# start at copies of the feet), a transformation's domain and codomain, or those of each
+# item of a collection.
+_acsets(acs::ACSet) = (acs,)
+_acsets(a::OpenBayesNetOb) = (a.ob,)
+_acsets(f::ACSetTransformation) = (dom(f), codom(f))
+_acsets(o::StructuredMulticospan) = (apex(o), feet(o)..., map(dom, legs(o))...)
+_acsets(xs::Union{Tuple,AbstractVector}) = Iterators.flatten(map(_acsets, xs))
+_acsets(_) = ()
+
+function _ref_slots(acs::ACSet)
+    return ((attr, p) for (attr, ob, T) in attrs(acset_schema(acs))
+            if T === :Ref for p in parts(acs, ob))
+end
+
+function _has_unset_ref(acs::ACSet)
+    return any(!_has_value(subpart(acs, p, attr)) for (attr, p) in _ref_slots(acs))
+end
+
+function _hold_unset_refs!(acs::ACSet)
+    for (attr, p) in _ref_slots(acs)
+        _has_value(subpart(acs, p, attr)) || set_subpart!(acs, p, attr, _UnsetRef())
+    end
+    return acs
+end
+
+function _release_unset_refs!(acs::ACSet)
+    for (attr, p) in _ref_slots(acs)
+        subpart(acs, p, attr) isa _UnsetRef && set_subpart!(acs, p, attr, nothing)
+    end
+    return acs
+end
+
+# `f(args...)`, a computation that takes colimits of `args`, run with any unset reference
+# held by a placeholder. The arguments are not modified.
+function _with_unset_refs_held(f, args...)
+    any(_has_unset_ref, _acsets(args)) || return f(args...)
+    held = deepcopy(args)
+    foreach(_hold_unset_refs!, _acsets(held))
+    result = f(held...)
+    foreach(_release_unset_refs!, _acsets(result))
+    return result
+end
+
 # Pushouts
 ##########
 
@@ -130,7 +187,8 @@ are retained, including their raw state-row numbering.
 This is the composition underlying the structural-isomorphism category.
 [`compose`](@ref) remains the name-safe compatibility wrapper. A result with
 duplicate names must be accessed by part ids or suitably renamed before using
-APIs requiring unique names; kernel references survive the pushout unchanged.
+APIs requiring unique names; kernel and space references survive the pushout
+unchanged, and an unset one, which is structurally valid, stays unset.
 """
 function compose_structural(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
     return first(_compose_structural_with_maps(A, B))
@@ -142,12 +200,14 @@ function _compose_structural_with_maps(A::OpenBayesNetCospan, B::OpenBayesNetCos
     d = _interface_difference(output_space(A), input_space(B))
     d === nothing ||
         throw(InterfaceMismatchError(d..., "compose: outputs(A) vs inputs(B)"))
-    # A single position-ordered middle foot avoids imposing raw State-ID equality.
-    P, ia, ib = _pushout_along_maps(apex(A), output_variables(A),
-                                    apex(B), input_variables(B))
-    cat = infer_acset_cat(P)
-    cospan = Cospan(P, compose[cat](left_leg(A), ia), compose[cat](right_leg(B), ib))
-    C = force(OpenBayesNetCospan(cospan, dom(A), codom(B)))
+    C, ia, ib = _with_unset_refs_held(A, B) do A, B
+        # A single position-ordered middle foot avoids imposing raw State-ID equality.
+        P, ia, ib = _pushout_along_maps(apex(A), output_variables(A),
+                                        apex(B), input_variables(B))
+        cat = infer_acset_cat(P)
+        cospan = Cospan(P, compose[cat](left_leg(A), ia), compose[cat](right_leg(B), ib))
+        return force(OpenBayesNetCospan(cospan, dom(A), codom(B))), ia, ib
+    end
     validate(C; unique_names=false)
     return C, ia, ib
 end
@@ -172,6 +232,10 @@ composite never silently carries two variables of one name. A pair `a => b` with
 with a `NameClashError`: the rename would produce a duplicate rather than the
 intended merge.
 
+The operands are not validated, but a name or position without a value in either
+apex or in a glued foot raises `MissingAttributeError`, since the pushout reads them.
+An unset reference, which is structurally valid, stays unset.
+
 # Example
 
 ```jldoctest
@@ -191,6 +255,9 @@ julia> inputs(C), outputs(C), sort(variable_names(apex(C)))
 """
 function glue(A::OpenBayesNetCospan, B::OpenBayesNetCospan;
               along::AbstractVector{<:Pair{Symbol,Symbol}})
+    # The operands are not validated, but the comparison below reads the glued feet and
+    # the pushout every attribute of the apexes.
+    foreach(_require_attributes, (apex(A), apex(B), output_space(A), input_space(B)))
     outA, inB = outputs(A), inputs(B)
     ia, ib = Int[], Int[]
     for (k, (a, b)) in enumerate(along)
@@ -240,7 +307,9 @@ function glue(A::OpenBayesNetCospan, B::OpenBayesNetCospan;
             set_subpart!(apB, v, :variable_name, name)
         end
     end
-    P, mapA, mapB = _pushout_along(apex(A), VA_out[ia], apB, VB_in[ib])
+    P, mapA, mapB = _with_unset_refs_held(apex(A), apB) do a, b
+        return _pushout_along(a, VA_out[ia], b, VB_in[ib])
+    end
     keep_a = setdiff(eachindex(outA), ia)
     keep_b = setdiff(eachindex(inB), ib)
     in_ids = vcat(mapA[input_variables(A)], mapB[VB_in[keep_b]])
@@ -260,26 +329,43 @@ end
 Place two open networks side by side: the apex is the coproduct (disjoint union) of the
 apexes and the interfaces are concatenated, `inputs(A)` then `inputs(B)` and likewise
 for outputs. Variable and mechanism names are kept, so tensoring a network with itself
-yields repeated names; the result is validated with `unique_names = false`.
+yields repeated names; the result is validated with `unique_names = false`. References
+are kept too, and an unset one stays unset, as it does in the tensor of two interfaces,
+`dom(A) ⊗ dom(B)`.
 """
 function otimes(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
     return first(_otimes_with_maps(A, B))
 end
 
+# The tensor of two interface objects. Catlab's method takes a coproduct of the feet,
+# which reads every reference, so it runs with any unset reference held by a placeholder.
+# This method is on the concrete type of an interface object, so that `invoke` with the
+# abstract one reaches Catlab's.
+function otimes(a::OpenBayesNetOb{VariableSpace}, b::OpenBayesNetOb{VariableSpace})
+    return _with_unset_refs_held(a, b) do a, b
+        return invoke(otimes, Tuple{OpenBayesNetOb,OpenBayesNetOb}, a, b)
+    end
+end
+
 function _otimes_with_maps(A::OpenBayesNetCospan, B::OpenBayesNetCospan)
     validate(A; unique_names=false)
     validate(B; unique_names=false)
-    cat = infer_acset_cat(apex(A))
-    cp = coproduct[cat](apex(A), apex(B))
-    ia, ib = legs(cp)
-    input_sum = coproduct[cat](dom(left_leg(A)), dom(left_leg(B)))
-    output_sum = coproduct[cat](dom(right_leg(A)), dom(right_leg(B)))
-    input_leg = copair[cat](input_sum,
-                            compose[cat](left_leg(A), ia), compose[cat](left_leg(B), ib))
-    output_leg = copair[cat](output_sum,
-                             compose[cat](right_leg(A), ia), compose[cat](right_leg(B), ib))
-    C = force(OpenBayesNetCospan(Cospan(apex(cp), input_leg, output_leg),
-                                 otimes(dom(A), dom(B)), otimes(codom(A), codom(B))))
+    C, ia, ib = _with_unset_refs_held(A, B) do A, B
+        cat = infer_acset_cat(apex(A))
+        cp = coproduct[cat](apex(A), apex(B))
+        ia, ib = legs(cp)
+        input_sum = coproduct[cat](dom(left_leg(A)), dom(left_leg(B)))
+        output_sum = coproduct[cat](dom(right_leg(A)), dom(right_leg(B)))
+        input_leg = copair[cat](input_sum,
+                                compose[cat](left_leg(A), ia),
+                                compose[cat](left_leg(B), ib))
+        output_leg = copair[cat](output_sum,
+                                 compose[cat](right_leg(A), ia),
+                                 compose[cat](right_leg(B), ib))
+        C = force(OpenBayesNetCospan(Cospan(apex(cp), input_leg, output_leg),
+                                     otimes(dom(A), dom(B)), otimes(codom(A), codom(B))))
+        return C, ia, ib
+    end
     validate(C; unique_names=false)
     return C, ia, ib
 end
@@ -325,7 +411,9 @@ outputs the remaining outer-port variables, in outer-port order.
 
 An outer port on a junction that no box touches has no variable to stand for and is
 refused with an `InterfaceMismatchError``(:missing_junction, ...)` naming the
-junction.
+junction. The colimit reads every attribute of the apexes, so a name or position
+without a value raises `MissingAttributeError` even with `validate = false`; an unset
+reference, which is structurally valid, stays unset.
 
 Undirected diagrams cannot express the typed-interface rule, so it is checked
 afterwards by [`validate_composition`](@ref) (skipped with `validate = false`): a
@@ -358,6 +446,9 @@ function oapply(uwd::UndirectedWiringDiagram, nets::AbstractVector{<:OpenBayesNe
                 validate::Bool=true)
     nboxes(uwd) == length(nets) ||
         throw(ArgumentError("oapply: the diagram has $(nboxes(uwd)) boxes but $(length(nets)) networks were given"))
+    # Even with `validate = false` the colimit reads every attribute of the apexes; the
+    # feet are rebuilt from them.
+    foreach(n -> _require_attributes(apex(n)), nets)
     unbundled = map(_unbundle, nets)
     junction_feet = Dict{Int,VariableSpace}()
     for (b, m) in zip(boxes(uwd), unbundled)
@@ -384,7 +475,7 @@ function oapply(uwd::UndirectedWiringDiagram, nets::AbstractVector{<:OpenBayesNe
                                          nothing,
                                          "oapply: outer port $p is wired to junction $j$(_junction_suffix(uwd, j)), which no box touches"))
     end
-    R = oapply(uwd, unbundled, nothing)
+    R = _with_unset_refs_held(us -> oapply(uwd, us, nothing), unbundled)
     P = apex(R)
     outer = Int[only(_variable_component(leg)) for leg in legs(R)]
     in_ids = filter(v -> !has_mechanism(P, v), outer)
@@ -436,7 +527,7 @@ variable is an input) that keeps the interface of the containing network unchang
 The hidden variables of `N` and the mechanisms it adds must not be named like a
 variable or a remaining mechanism of `bn` (`NameClashError`), and the result is
 validated (closed if `bn` was closed, with unique names when `bn` and `apex(N)` had
-them).
+them). An unset reference, which is structurally valid, stays unset.
 
 On a `BayesModel` the rewrite is recorded as a `:substitute` event whose
 `removed` record is the old mechanism and whose note lists the mechanisms of `N`; the
@@ -461,8 +552,10 @@ function substitute(bn::BayesNet, sub::Pair{Symbol,<:OpenBayesNet})
     bn2 = deepcopy(bn)
     cascading_rem_part!(bn2, :Mechanism, m)
     _check_substitution_names(bn2, N)
-    P, _, _ = _pushout_along(bn2, vcat(ps, t), apex(N),
-                             vcat(input_variables(N), output_variables(N)))
+    P, _, _ = _with_unset_refs_held(bn2, apex(N)) do a, b
+        return _pushout_along(a, vcat(ps, t), b,
+                              vcat(input_variables(N), output_variables(N)))
+    end
     validate(P; closed=closed,
              unique_names=_unique_named(bn2) && _unique_named(apex(N)))
     return P

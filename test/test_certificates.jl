@@ -82,6 +82,30 @@ end
     @test e isa OpenCertificateError && e.what === :unsupported_reference
     @test e.path == "mechanisms.kernelRef" && e.name == mechanism_name(apex(custom), 1)
 
+    # An unset reference is structurally valid, but the certificate records the value of
+    # every reference: a typed error naming the part and the attribute, not a `MethodError`.
+    hidden = bayesnet(:A => [:a1, :a2], :B => [:b1, :b2]; mechanisms=[:B => :A])
+    v, m = variable_id(hidden, :B), mechanism_of(hidden, :B)
+    set_subpart!(hidden, v, :space_ref, nothing)
+    e = try
+        open_network_certificate(Open(hidden; outputs=[:A]))
+    catch err
+        err
+    end
+    @test e isa OpenCertificateError && e.what === :unset_reference
+    @test e.path == "variables.spaceRef" && e.name === :B
+    @test occursin("Variable $v has no value for space_ref", e.message)
+    set_subpart!(hidden, v, :space_ref, NoRef())
+    set_subpart!(hidden, m, :kernel_ref, nothing)
+    e = try
+        open_network_certificate(Open(hidden; outputs=[:A]))
+    catch err
+        err
+    end
+    @test e isa OpenCertificateError && e.what === :unset_reference
+    @test e.path == "mechanisms.kernelRef" && e.name == mechanism_name(hidden, m)
+    @test occursin("Mechanism $m has no value for kernel_ref", e.message)
+
     empty = open_network_certificate(Open(BayesNet()))
     @test empty.variableCount == 0
     @test isempty(empty.variableData) && isempty(empty.mechanisms)

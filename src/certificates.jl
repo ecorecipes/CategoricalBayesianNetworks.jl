@@ -9,6 +9,14 @@ function _certificate_ref(ref::KernelRef, owner)
     return throw(OpenCertificateError(:unsupported_reference, path, name,
                                       "OpenNet.RawCertificate/v1 does not support reference type $(typeof(ref))"))
 end
+# An unset reference (`nothing`, or an attribute variable) is structurally valid, since
+# only the semantics layer needs one bound. The certificate records the value of every
+# reference, so it cannot represent one (ADR 0015). `owner` names the part and attribute.
+function _certificate_ref(::Union{Nothing,AttrVar}, owner)
+    path, name, ob, id, attr = owner
+    return throw(OpenCertificateError(:unset_reference, path, name,
+                                      "$ob $id has no value for $attr, and OpenNet.RawCertificate/v1 records every reference (NoRef() records none)"))
+end
 
 function _certificate_ranks(bn::AbstractBayesNet, ids::Vector{Int}, supplied)
     if supplied === nothing
@@ -42,7 +50,8 @@ function _certificate_boundary(foot::AbstractVariableSpace, mapping::Vector{Int}
              attrs=(name=String(variable_name(foot, v)),
                     spaceRef=_certificate_ref(subpart(foot, v, :space_ref),
                                               ("boundary.spaceRef",
-                                               variable_name(foot, v))),
+                                               variable_name(foot, v), :Variable, v,
+                                               :space_ref)),
                     states=String.(states(foot, v))))
             for (i, v) in enumerate(parts(foot, :Variable))]
 end
@@ -67,7 +76,9 @@ them exactly, contain nonnegative integers, and increase strictly along every
 input occurrence. Invalid rank arguments raise `ArgumentError` with the offending
 parts; structural errors use the normal [`validate`](@ref) exceptions. A space or
 kernel reference the v1 profile has no tag for (a user-defined `KernelRef` subtype)
-raises `OpenCertificateError` with `what = :unsupported_reference`.
+raises `OpenCertificateError` with `what = :unsupported_reference`. An unset one, which
+is structurally valid, raises it with `what = :unset_reference`, naming the part and the
+attribute, since the certificate records the value of every reference.
 
 The result can be serialized by JSON3 or another JSON writer. Its format is
 specified in `proofs/EXPORTER-CONTRACT.md`. Exporting is not by itself a proof
@@ -83,7 +94,8 @@ function open_network_certificate(o::OpenBayesNetCospan; ranks=nothing)
     variable_data = [(name=String(variable_name(bn, v)),
                       spaceRef=_certificate_ref(subpart(bn, v, :space_ref),
                                                 ("variables.spaceRef",
-                                                 variable_name(bn, v))),
+                                                 variable_name(bn, v), :Variable, v,
+                                                 :space_ref)),
                       stateRows=[(name=String(subpart(bn, s, :state_name)),
                                   position=subpart(bn, s, :state_position))
                                  for s in incident(bn, v, :state_variable)],
@@ -91,7 +103,8 @@ function open_network_certificate(o::OpenBayesNetCospan; ranks=nothing)
     mechanism_data = [(name=String(mechanism_name(bn, m)),
                        kernelRef=_certificate_ref(subpart(bn, m, :kernel_ref),
                                                   ("mechanisms.kernelRef",
-                                                   mechanism_name(bn, m))),
+                                                   mechanism_name(bn, m), :Mechanism, m,
+                                                   :kernel_ref)),
                        target=dense[target(bn, m)],
                        inputRows=[(varId=dense[subpart(bn, i, :input_variable)],
                                    position=subpart(bn, i, :input_position))

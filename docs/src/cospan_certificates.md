@@ -119,6 +119,9 @@ nulls nor boolean/nonnumeric substitutes for IDs.
 
 `OpenCertificateError` identifies a profile error and its record path.
 It is defined in BayesianNetworks' shared exception hierarchy.
+An unset space or kernel reference is structurally valid, but the profile
+records the value of every reference, so it is reported with
+`what = :unset_reference`.
 The ordinary structural exceptions are retained for invalid networks.
 Inputs are copied for capture; do not mutate them or the signature during
 capture. Returned arrays do not alias the source.

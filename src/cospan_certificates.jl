@@ -33,6 +33,12 @@ function _open_cert_fields(value, fields, path)
 end
 
 function _open_cert_reference(ref, path; name=nothing)
+    # An unset reference is structurally valid, since only the semantics layer needs one
+    # bound, but the profile records the value of every reference.
+    _has_value(ref) ||
+        _open_cert_fail(:unset_reference, path,
+                        "the reference has no value, and the profile records every reference (NoRef() records none)";
+                        name)
     if ref isa Union{NamedTuple,AbstractDict}
         key = ref isa NamedTuple || haskey(ref, :type) ? :type : "type"
         haskey(ref, key) ||
@@ -47,10 +53,16 @@ function _open_cert_reference(ref, path; name=nothing)
         fields === nothing &&
             _open_cert_fail(:reference, path, "unsupported reference tag"; name)
         data = _open_cert_fields(ref, fields, path)
-        if length(fields) == 2
-            _open_cert_text(data[fields[2]], path * "." * String(fields[2]); name)
+        # The `id`, `state` or `decision` is a name, so it is a string or a Symbol, like
+        # every other name of the profile. The reference is built from its checked text,
+        # not by `BayesianNetworks`' JSON reader, which accepts only strings.
+        ref = if length(fields) == 1
+            NoRef()
+        else
+            text = _open_cert_text(data[fields[2]], path * "." * String(fields[2]); name)
+            tag == "NamedRef" ? NamedRef(text) :
+            tag == "PointMassRef" ? PointMassRef(Symbol(text)) : PolicyRef(Symbol(text))
         end
-        ref = BayesianNetworks._kernel_ref_from(data)
     end
     ref isa Union{NoRef,NamedRef,PointMassRef,PolicyRef} ||
         _open_cert_fail(:reference, path, "unsupported reference type $(typeof(ref))"; name)
@@ -138,9 +150,11 @@ function _open_cert_space(space::AbstractVariableSpace, path, used)
             _open_cert_fail(:states, path * ".Variable[$(v - 1)]",
                             "the certificate profile requires at least one state"; name)
         row = (id=v,
-               variable_name=_open_cert_text(name, path * ".Variable.variable_name"; name),
+               variable_name=_open_cert_text(name,
+                                             path * ".Variable[$(v - 1)].variable_name";
+                                             name),
                space_ref=_open_cert_reference(space_ref(space, v),
-                                              path * ".Variable.space_ref"; name))
+                                              path * ".Variable[$(v - 1)].space_ref"; name))
         push!(vars, _open_cert_budget!(used, row, path))
     end
     state_rows = NamedTuple[]
@@ -269,7 +283,9 @@ entries encodes a finite relation: each entry has `label=(mechanism_name,
 kernel_ref)`, `inputs=[(variable_name,space_ref,states), ...]`, and `output`
 with the same attribute fields. Records may be NamedTuples or dictionaries;
 names may be strings or Symbols, and references may be `KernelRef`s or their
-exact tagged JSON objects. Several entries may share a label or even repeat.
+exact tagged JSON objects. A tagged object's `type` is a string, and its `id`,
+`state` or `decision` is a name, so a string or a Symbol, lowered to a string
+either way. Several entries may share a label or even repeat.
 Every mechanism must match a complete triple, not a label-only lookup.
 
 The versioned profile requires nonempty state bundles; at most 256 parts per
@@ -277,7 +293,10 @@ sort, map entries or input/state labels; 512 signature entries; 1:128 Unicode
 scalar values per name/reference; and at most 1 MiB of compact JSON3 output.
 C0/C1 controls, DEL, invalid UTF-8 and surrogates are rejected.
 Descriptions allow up to 2048 scalar values. `OpenCertificateError`
-reports profile failures. Structure is checked with `unique_names=false`.
+reports profile failures. Structure is checked with `unique_names=false`. An
+unset reference is structurally valid, but the profile records the value of
+every reference, so it is a failure with `what = :unset_reference`, whose path
+names the part and the attribute.
 
 Metadata is descriptive, not attestation. The default comparison digest names
 the frozen implementation-v1 comparison packet, **not** the currently loaded

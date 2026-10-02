@@ -362,4 +362,106 @@
         @test variable_name.(Ref(Po), exogenous(Po)) ==
               variable_name.(Ref(obn), exogenous(obn))
     end
+
+    @testset "an unset reference is structurally valid" begin
+        # An ACSet built part by part can leave a space or kernel reference unset, which
+        # `BayesianNetworks` allows. Validation and every composition accept it, and it
+        # stays unset; one set on a single side of a leg or an interface is a mismatch.
+        CBN = CategoricalBayesianNetworks
+        refs(acs) = [subpart(acs, p, attr) for (attr, p) in CBN._ref_slots(acs)]
+        unset(acs) = count(isnothing, refs(acs))
+        held(x) = any(acs -> any(r -> r isa CBN._UnsetRef, refs(acs)), CBN._acsets(x))
+        # X (an input, unset space) -> Y (unset kernel) -> H (hidden, unset space).
+        bn = BayesNet()
+        x = add_part!(bn, :Variable; variable_name=:X)
+        add_state!(bn, x, :a)
+        add_state!(bn, x, :b)
+        y = add_variable!(bn, :Y; states=[:c, :d])
+        m = add_part!(bn, :Mechanism; target=y, mechanism_name=:Ym)
+        add_part!(bn, :Input; input_mechanism=m, input_variable=x, input_position=1)
+        h = add_part!(bn, :Variable; variable_name=:H)
+        add_state!(bn, h, :h)
+        add_mechanism!(bn, h; inputs=[y])
+        @test unset(bn) == 3
+        o = Open(bn; inputs=[:X], outputs=[:Y])
+        before = deepcopy(o)
+        @test isempty(validation_errors(o)) && isvalid(o)
+        @test subpart(input_space(o), 1, :space_ref) === nothing
+        # A leg preserves an unset reference only as unset.
+        foot = VariableSpace()
+        add_variable!(foot, :X; states=[:a, :b])
+        bad = OpenBayesNet(bn, CBN.OpenACSetLeg(foot; Variable=[x], State=state_ids(bn, x)),
+                           CBN._leg(bn, [y]))
+        @test validation_errors(bad) == [InterfaceError(5, [:X], [1])]
+        withref = bayesnet(:X => [:a, :b]; closed=false)
+        foot = VariableSpace()
+        add_part!(foot, :Variable; variable_name=:X)
+        add_state!(foot, 1, :a)
+        add_state!(foot, 1, :b)
+        bad = OpenBayesNet(withref, CBN.OpenACSetLeg(foot; Variable=[1], State=[1, 2]),
+                           CBN._leg(withref, [1]))
+        @test validation_errors(bad) == [InterfaceError(5, [:X], [1])]
+        # Every composition keeps the unset references unset and leaves its operands alone.
+        a = BayesNet()
+        xa = add_part!(a, :Variable; variable_name=:X)
+        add_state!(a, xa, :a)
+        add_state!(a, xa, :b)
+        add_mechanism!(a, xa)
+        P = Open(a; outputs=[:X])
+        U = Open(bayesnet(:U => [:u]); outputs=[:U])
+        uwd = @relation (y,) begin
+            produce(x)
+            consume(x, y)
+        end
+        for (C, n) in
+            ((compose(P, o), 3), (compose_structural(P, o), 3), (otimes(o, U), 3),
+             (otimes(o, o), 6), (glue(P, o; along=[:X => :X]), 3),
+             (oapply(uwd, [P, o]), 3))
+            @test isvalid(C) && unset(apex(C)) == n && !held(C)
+        end
+        @test subpart(input_space(otimes(o, U)), 1, :space_ref) === nothing
+        # So does the tensor of two interfaces.
+        @test subpart((dom(o) ⊗ dom(o)).ob, :space_ref) == [nothing, nothing]
+        @test subpart(otimes(dom(o), codom(U)).ob, :space_ref) == [nothing, NoRef()]
+        @test isvalid(id(dom(o) ⊗ codom(U)))
+        host = BayesNet()
+        hx = add_part!(host, :Variable; variable_name=:X)
+        add_state!(host, hx, :a)
+        add_state!(host, hx, :b)
+        hy = add_variable!(host, :Y; states=[:c, :d])
+        add_mechanism!(host, hy; inputs=[hx], name=:Yhost)
+        add_mechanism!(host, hx)
+        S = substitute(host, :Yhost => o)
+        @test isvalid(S; closed=true) && unset(S) == 3 && !held(S)
+        @test o == before && unset(host) == 1
+        # An unset reference glued to a set one is refused before the colimit.
+        e = try
+            compose(Open(bayesnet(:X => [:a, :b]); outputs=[:X]), o)
+        catch err
+            err
+        end
+        @test e isa InterfaceMismatchError && e.what === :space_ref
+        # `glue` and `oapply` do not validate their operands, but a name or position
+        # without a value is a `MissingAttributeError`, not a `MethodError` from the colimit.
+        named = bayesnet(:X => [:a, :b], :Y => [:c, :d]; mechanisms=[:Y => :X])
+        v = add_part!(named, :Variable; space_ref=NoRef())
+        add_state!(named, v, :h)
+        add_mechanism!(named, v; name=:Hm)
+        Av = Open(named; outputs=[:Y], validate=false)
+        Bv = Open(bayesnet(:Y => [:c, :d], :Z => [:e]; mechanisms=[:Z => :Y], closed=false);
+                  inputs=[:Y], outputs=[:Z])
+        uwd = @relation (z,) begin
+            upstream(y)
+            downstream(y, z)
+        end
+        for f in (() -> glue(Av, Bv; along=[:Y => :Y]),
+                  () -> oapply(uwd, [Av, Bv]; validate=false))
+            e = try
+                f()
+            catch err
+                err
+            end
+            @test e == MissingAttributeError(:Variable, v, :variable_name)
+        end
+    end
 end

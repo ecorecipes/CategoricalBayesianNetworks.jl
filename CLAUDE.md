@@ -192,6 +192,16 @@ and BayesianNetworkInference do: today that is `ConflictingKernelError`. MarkovC
   compared (names, states with positions, `space_ref`) before every colimit; `glue` renames B's
   glued variables to A's names first. Colimits renumber parts but never reorder states or inputs
   (orders are attributes); results are re-wrapped with freshly built feet and validated.
+- Catlab's colimits and `is_natural` apply each attribute type's identity to every value, and
+  fail on one that is not set (`nothing`). An unset `Ref` is structurally valid, as in
+  `BayesianNetworks`, so `_leg_is_natural` checks such a leg itself, and `_with_unset_refs_held`
+  runs a colimit on copies whose unset references hold the private placeholder `_UnsetRef()`,
+  cleared from all it returns; the tensor of two interface objects goes through it too. A
+  missing `Label` or `Position` is a `MissingAttributeError` before any colimit (`_foot`,
+  `_require_attributes`). A wiring diagram needs every reference (its ports and boxes have
+  `KernelRef` fields), so an unset one is a `MissingAttributeError` before anything is
+  built. Certificates record every reference, so an unset one is
+  `OpenCertificateError(:unset_reference, ...)`.
 - `dom` / `codom` stay Catlab's (they return `OpenBayesNetOb`); `input_space` / `output_space`
   return the `VariableSpace`s. Do not override them or Catlab's `compose` breaks.
 - Catlab's `copy(::WiringDiagram)` and its expression algorithms go through the untyped
