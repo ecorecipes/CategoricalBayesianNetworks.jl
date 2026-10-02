@@ -271,7 +271,7 @@ Selected SHA256 digests:
 | Live/reproduced audit | `af22d74754905867f15db11301bd0a0e155288953bfc1eb0d4d8003446899b18` |
 | Live/reproduced CLI tests | `5d6336031e3d139ab6b3f06783964d6f62da0316b473ef04d56e4050a06abdfd` |
 | Fresh-snapshot build | `32382bf9cba55ab547669affd047a70772ce7262df752df0e976d7d3b801fd8f` |
-| Documentation output | `a836ac8f8ab9f4e18082c8cb0dd178d4746371d4fcdc0536c2f4d373d96e7b06` |
+| Documentation output | `11b5791e64094d65bcd85465c82afaa1ae267ffc8e3757eedccb35dbcdeff5dc` |
 | Dependency inventory | `3cd70c81fc0b9bc6ccdde1a1eff572f98d0725782a8a3530f2d8c1b3e10301c8` |
 
 All live source, configuration, fixture, document and receipt hashes are in

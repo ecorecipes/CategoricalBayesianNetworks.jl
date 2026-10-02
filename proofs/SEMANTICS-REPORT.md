@@ -380,18 +380,18 @@ Selected final SHA256 values:
 | Full 45-page PDF | `cd5d96f3d8ffe6f3add52cccdf0018f82721c454bd5182add5519a74762b07d4` |
 | Live build output | `a67ca4040222056b22ed6454ada9f02cacd9952bbd430322a10304b5918fdac1` |
 | Live and reproduced audit output | `ec06f12504ce02363a15e847b31bdf3aeb1fef11fbd0495073317fa4007bb946` |
-| Documentation output | `564d69e6a0e601c7b30e7a384f3cefe66995926f761bc82dcafc818874648cef` |
+| Documentation output | `c3c6661e628ab2e7325e84a9203f5c7a38905879a285bcfbb1c1bcda555369d2` |
 | Fresh source-snapshot build | `bae54980f2975710235e8f84e8698feff6317bd694f0a4dd4b080a3d0fc7fa2c` |
 | Same-prover dependency inventory | `4da5b353f9bc9df3e67586757648d56e15d2ccc0cd4d553617ef86c624879c28` |
 | Font inventory | `f0e7caf2714b8e03ad6d9da93361c2218e8f81b02a320987ec4514ae2b427270` |
 
 The complete live material inventory is `SHA256SUMS`. The new frozen snapshot,
 root `REPORT.md`, exact same-prover source closure, configurations, diagrams,
-documents, receipts, font files/licence, `SHA256SUMS` and `FREEZE.json` live at:
+documents, receipts, font files/licence, `SHA256SUMS` and `FREEZE.json` live in
+the authoring session's local state outside this repository, at:
 
 ```text
-<authoring-session-state>/
-  files/backlog3/project-lean-semantics/
+files/backlog3/project-lean-semantics/
 ```
 
 Old `project-lean*` and `proof2/*` freezes remain immutable. The new snapshot

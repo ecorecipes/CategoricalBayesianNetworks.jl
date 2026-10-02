@@ -386,16 +386,16 @@ Selected final SHA256 digests:
 | Full proof PDF | `0580adc901cfb914b2c1d17113d3cec826c2f539f773b51727b5ed3fea2157db` |
 | Build output | `b3fa8aed994454ad6287f133bf7d89b8758284ddf19c7fd22ea37584ee6946bd` |
 | Audit output | `10bc9a3cfffbe4f7f38cf9a55a9b4e7e718b2715090234354b98f2d0ff1ee3cd` |
-| Documentation output | `34ec2ea6a4b999035cfe733e9af64a9fd17a9e020f08da6595dcb4afaca65cd8` |
+| Documentation output | `6c6f9f2b4e0ba15db9330419a8145c47e108c76286d2a544b0fa90d7b3218503` |
 
 The complete source, configuration, document, diagram, report, and evidence
 inventory is [SHA256SUMS](SHA256SUMS). The inventory excludes itself to avoid
 self-reference. A frozen snapshot, this report, a separate full artifact
-inventory, and `FREEZE.json` are placed under:
+inventory, and `FREEZE.json` are placed, in the authoring session's local state
+outside this repository, under:
 
 ```text
-<authoring-session-state>/
-  files/proof2/project-lean-category/
+files/proof2/project-lean-category/
 ```
 
 The snapshot excludes dependency caches and build intermediates. It contains
