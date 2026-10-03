@@ -169,5 +169,10 @@ to_graphviz(d)                                  # the wiring diagram, as SVG
 
 ## Vignettes
 
-Rendered vignettes live in [`vignettes/`](vignettes/) and are published in the
-[documentation](https://ecorecipes.github.io/CategoricalBayesianNetworks.jl/).
+| # | Vignette | Description |
+|---|---|---|
+| 1 | [Wiring diagrams and evaluation](https://github.com/ecorecipes/CategoricalBayesianNetworks.jl/blob/main/vignettes/01_wiring_diagrams_and_evaluation/01_wiring_diagrams_and_evaluation.md) | Networks as wiring diagrams, from diagrams to expressions, and two evaluation routes to the same joint |
+| 2 | [Open networks and composition](https://github.com/ecorecipes/CategoricalBayesianNetworks.jl/blob/main/vignettes/02_open_networks_and_composition/02_open_networks_and_composition.md) | Splitting a network, the typed-interface rule, sequential composition, gluing, tensor, substitution and compositional semantics |
+
+Each vignette is also published as a tutorial in the [documentation](https://ecorecipes.github.io/CategoricalBayesianNetworks.jl/);
+the sources are the `.qmd` files in [`vignettes/`](vignettes/).
