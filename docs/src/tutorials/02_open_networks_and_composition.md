@@ -419,29 +419,45 @@ cards continue in `BayesianNetworks.jl`’s own vignettes.
 
 ## References
 
+```@raw html
 <div id="refs" class="references csl-bib-body hanging-indent">
+```
 
+```@raw html
 <div id="ref-BaezCourser2020" class="csl-entry">
+```
 
 Baez, John C., and Kenny Courser. 2020. “Structured Cospans.” *Theory
 and Applications of Categories* 35 (48): 1771–822.
 
+```@raw html
 </div>
+```
 
+```@raw html
 <div id="ref-Fong2012" class="csl-entry">
+```
 
 Fong, Brendan. 2012. *Causal Theories: A Categorical Perspective on
 Bayesian Networks*. <https://arxiv.org/abs/1301.6201>.
 
+```@raw html
 </div>
+```
 
+```@raw html
 <div id="ref-Libkind2022" class="csl-entry">
+```
 
 Libkind, Sophie, Andrew Baas, Micah Halter, Evan Patterson, and James P.
 Fairbanks. 2022. “An Algebraic Framework for Structured Epidemic
 Modelling.” *Philosophical Transactions of the Royal Society A* 380
 (2233): 20210309. <https://doi.org/10.1098/rsta.2021.0309>.
 
+```@raw html
 </div>
+```
 
+```@raw html
 </div>
+```

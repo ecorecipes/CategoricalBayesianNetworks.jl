@@ -266,30 +266,46 @@ the `do` operator, is a vignette of `BayesianNetworks.jl`.
 
 ## References
 
+```@raw html
 <div id="refs" class="references csl-bib-body hanging-indent">
+```
 
+```@raw html
 <div id="ref-ChoJacobs2019" class="csl-entry">
+```
 
 Cho, Kenta, and Bart Jacobs. 2019. “Disintegration and Bayesian
 Inversion via String Diagrams.” *Mathematical Structures in Computer
 Science* 29 (7): 938–71. <https://doi.org/10.1017/S0960129518000488>.
 
+```@raw html
 </div>
+```
 
+```@raw html
 <div id="ref-Fritz2020" class="csl-entry">
+```
 
 Fritz, Tobias. 2020. “A Synthetic Approach to Markov Kernels,
 Conditional Independence and Theorems on Sufficient Statistics.”
 *Advances in Mathematics* 370: 107239.
 <https://doi.org/10.1016/j.aim.2020.107239>.
 
+```@raw html
 </div>
+```
 
+```@raw html
 <div id="ref-KollerFriedman2009" class="csl-entry">
+```
 
 Koller, Daphne, and Nir Friedman. 2009. *Probabilistic Graphical Models:
 Principles and Techniques*. MIT Press.
 
+```@raw html
 </div>
+```
 
+```@raw html
 </div>
+```
