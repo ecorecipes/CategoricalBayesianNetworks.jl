@@ -21,6 +21,19 @@ front matter (a document-level `format:` block otherwise hides the project-level
 format). Make sure the package is precompiled before rendering, otherwise Julia's
 precompilation output is captured into the first cell of the rendered file.
 
+The polar-bear section of `03_composing_zoo_networks` runs only when
+`ECOLOGICAL_BN_FETCH=true`; it then downloads two fetch-only models into the zoo's cache.
+Otherwise it prints a note and is skipped. Two things can hide a change of the variable:
+a whole-project render keeps a vignette's frozen output until its `.qmd` changes
+(`freeze: auto`), and the Julia server that quarto keeps between renders keeps the
+environment it was started with. Stop the server, then render the vignette on its own,
+which always executes it:
+
+```sh
+quarto call engine julia kill
+ECOLOGICAL_BN_FETCH=true quarto render 03_composing_zoo_networks/03_composing_zoo_networks.qmd
+```
+
 ## PDF
 
 The PDF format (configured in `_quarto.yml`) uses `lualatex` with STIX Two Text/Math for

@@ -101,7 +101,15 @@ cd proofs && lake build --wfail && make audit && make docs        # exact syntax
   `biotic_bn`, `abiotic_open` and `biotic_open`, which the later files reuse;
   `test_properties.jl` defines `random_model`.
 - `vignettes/01_wiring_diagrams_and_evaluation`, `vignettes/02_open_networks_and_composition`:
-  the two vignettes, moved here from `BayesianNetworks.jl` (rendered outputs are committed).
+  moved here from `BayesianNetworks.jl`; `vignettes/03_composing_zoo_networks`: published
+  networks from the `EcologicalBayesianNetworks.jl` zoo, glued to show what interface typing,
+  the typed-interface rule and `merge_kernels` catch. Rendered outputs are committed. The
+  vignette environment depends on the zoo, so it also needs `BayesianNetworkInference.jl`,
+  `InfluenceDiagrams.jl` and `EcologicalBayesianNetworks.jl` beside this package. Vignette
+  03's polar-bear section uses fetch-only CC-BY-NC-ND models: it runs only with
+  `ECOLOGICAL_BN_FETCH=true` (never set in CI), prints no number derived from them (names,
+  titles, state labels, verdicts, error messages and node counts only) and writes no
+  converted copy. Keep it that way.
 
 ## Files not to edit by hand
 

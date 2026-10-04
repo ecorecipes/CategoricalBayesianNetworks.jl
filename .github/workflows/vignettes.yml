@@ -28,6 +28,20 @@ jobs:
         with:
           repository: ecorecipes/BayesianNetworks.jl
           path: BayesianNetworks.jl
+      # Vignette 03 reads published networks from the model zoo, which depends on the
+      # inference and influence-diagram packages.
+      - uses: actions/checkout@v4
+        with:
+          repository: ecorecipes/BayesianNetworkInference.jl
+          path: BayesianNetworkInference.jl
+      - uses: actions/checkout@v4
+        with:
+          repository: ecorecipes/InfluenceDiagrams.jl
+          path: InfluenceDiagrams.jl
+      - uses: actions/checkout@v4
+        with:
+          repository: ecorecipes/EcologicalBayesianNetworks.jl
+          path: EcologicalBayesianNetworks.jl
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.12'
@@ -58,6 +72,8 @@ jobs:
           path: CategoricalBayesianNetworks.jl/vignettes/_freeze
           key: freeze-${{ runner.os }}-${{ hashFiles('CategoricalBayesianNetworks.jl/vignettes/Manifest.toml', 'CategoricalBayesianNetworks.jl/vignettes/**/*.qmd') }}
       - name: Render (html, gfm, pdf)
+        # ECOLOGICAL_BN_FETCH is deliberately left unset: the polar-bear section of
+        # vignette 03 uses fetch-only CC-BY-NC-ND models and is skipped here.
         working-directory: CategoricalBayesianNetworks.jl/vignettes
         run: quarto render
       - name: Check docs are in sync

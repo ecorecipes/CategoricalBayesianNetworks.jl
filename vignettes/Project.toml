@@ -4,6 +4,9 @@ FiniteKernels = "2ee73795-50db-4096-9573-22982ed4949b"
 MarkovCategories = "89535b7d-47b5-4a7c-ab85-485cba9d75b9"
 BayesianNetworkFormats = "590d4596-919e-4d5f-b4a5-097a6400eab8"
 BayesianNetworks = "47d2e50c-3d9a-425e-96fd-023c794d3c65"
+BayesianNetworkInference = "195c3fd5-7fa7-45ed-aaa0-a92a9a2fe9e5"
+InfluenceDiagrams = "cd3dbe2d-275d-4a8e-841a-d44f7f7abf07"
+EcologicalBayesianNetworks = "c6b9e98e-d978-423e-90bc-2541a79df2a3"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [sources]
@@ -12,3 +15,6 @@ FiniteKernels = {path = "../../FiniteKernels.jl"}
 MarkovCategories = {path = "../../MarkovCategories.jl"}
 BayesianNetworkFormats = {path = "../../BayesianNetworkFormats.jl"}
 BayesianNetworks = {path = "../../BayesianNetworks.jl"}
+BayesianNetworkInference = {path = "../../BayesianNetworkInference.jl"}
+InfluenceDiagrams = {path = "../../InfluenceDiagrams.jl"}
+EcologicalBayesianNetworks = {path = "../../EcologicalBayesianNetworks.jl"}
